@@ -73,6 +73,69 @@ STRAT_COLORS = {
     "N/A": "#FFFFFF"
 }
 
+# ── risk / reward ────────────────────────────────────────────────────────────
+OPT_RR_DRAWDOWN = 0.50                       # options R/R risk = this fraction of the entry premium
+STOP_RULE = f"option −{OPT_RR_DRAWDOWN:.0%} or losing the trigger level in force"
+OPT_HOLD_DAYS  = {'daily': 1, 'swing': 3}    # trading days of theta charged before the target prints
+RISK_FREE_RATE = 0.04
+
+
+def _norm_cdf(x):
+    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+
+def _bs_d1(S, K, T, sigma, r):
+    return (math.log(S / K) + (r + 0.5 * sigma * sigma) * T) / (sigma * math.sqrt(T))
+
+
+def bs_price(S, K, T, sigma, is_call, r=RISK_FREE_RATE):
+    """Black-Scholes value of a European option; intrinsic at/after expiry."""
+    if S <= 0 or K <= 0:
+        return 0.0
+    if T <= 0 or sigma <= 0:
+        return max(0.0, S - K) if is_call else max(0.0, K - S)
+    d1 = _bs_d1(S, K, T, sigma, r)
+    d2 = d1 - sigma * math.sqrt(T)
+    disc = K * math.exp(-r * T)
+    if is_call:
+        return S * _norm_cdf(d1) - disc * _norm_cdf(d2)
+    return disc * _norm_cdf(-d2) - S * _norm_cdf(-d1)
+
+
+def bs_delta(S, K, T, sigma, is_call, r=RISK_FREE_RATE):
+    if S <= 0 or K <= 0 or T <= 0 or sigma <= 0:
+        itm = S > K if is_call else S < K
+        return (1.0 if is_call else -1.0) if itm else 0.0
+    n = _norm_cdf(_bs_d1(S, K, T, sigma, r))
+    return n if is_call else n - 1.0
+
+
+def implied_vol(price, S, K, T, is_call):
+    """Volatility that reprices `price` under Black-Scholes, or None when the
+    quote sits outside what any volatility in 1%-500% can produce."""
+    if price <= 0 or T <= 0 or S <= 0 or K <= 0:
+        return None
+    lo, hi = 0.01, 5.0
+    if not (bs_price(S, K, T, lo, is_call) < price < bs_price(S, K, T, hi, is_call)):
+        return None
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        if bs_price(S, K, T, mid, is_call) < price:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def _add_trading_days(dt, n):
+    """Step forward n weekdays (market holidays are not skipped)."""
+    while n > 0:
+        dt += datetime.timedelta(days=1)
+        if dt.weekday() < 5:
+            n -= 1
+    return dt
+
+
 # ── breadth: cap-weight vs equal-weight ETF mapping ──────────────────────────
 # GICS sector (as reported by yfinance .info['sector']) → (cap-weight SPDR,
 # Invesco S&P 500 Equal Weight). Used to auto-derive a stock's SECTOR breadth
@@ -973,7 +1036,7 @@ class StratMonitorApp(QMainWindow):
         if dn(third(d1)) and ins(prev(d1)) and up(last(d1)):
             bull_patterns.append(("2-1-2 Reversal",
                 "2-Down → Inside day → 2-Up. The inside bar compressed the seller; today's buyer "
-                "is breaking out of the coil. Trigger: above today's high. Stop: below today's low."))
+                "is breaking out of the coil. Trigger: above today's high. Stop: " + STOP_RULE + "."))
         if up(third(d1)) and ins(prev(d1)) and up(last(d1)):
             bull_patterns.append(("2-1-2 Continuation",
                 "2-Up → Inside → 2-Up. Buyer paused in the inside bar and is now resuming. "
@@ -1000,7 +1063,7 @@ class StratMonitorApp(QMainWindow):
         if up(third(d1)) and ins(prev(d1)) and dn(last(d1)):
             bear_patterns.append(("2-1-2 Reversal Bear",
                 "2-Up → Inside → 2-Down. Buyer trapped in the inside bar; seller breaking out. "
-                "Stop: reclaim above today's close. Target: prior week's low."))
+                "Stop: " + STOP_RULE + ". Target: prior week's low."))
         if dn(third(d1)) and ins(prev(d1)) and dn(last(d1)):
             bear_patterns.append(("2-1-2 Continuation Bear",
                 "2-Down → Inside → 2-Down. Seller paused and is resuming. "
@@ -1037,14 +1100,14 @@ class StratMonitorApp(QMainWindow):
                 "Five consecutive 2-Down bars with no consolidation — a linear ladder of "
                 "vulnerable stops left above every bar. Entry: $0.01 above the most recent "
                 "bar's high; the reversal cuts back through all five pivots in sequence. "
-                "Macro target: the high of the first bar of the ladder. Stop: below the "
-                "reversal candle's low — if the reclaim doesn't go instantly, it's invalid."))
+                "Macro target: the high of the first bar of the ladder. Stop: " + STOP_RULE +
+                " — if the reclaim doesn't go instantly, it's invalid."))
         if len(ext) >= 5 and all(up(b) for b in ext[-5:]):
             bear_patterns.insert(0, ("Pivot Machine Gun (Bear)",
                 "Five consecutive 2-Up bars with no consolidation — stops stacked under every "
                 "bar. Entry: $0.01 below the most recent bar's low; the break machine-guns back "
                 "through all five pivots. Macro target: the low of the first ladder bar. "
-                "Stop: above the reversal candle's high."))
+                "Stop: " + STOP_RULE + "."))
 
         if ins(prev(d1)) and out(last(d1)):
             if daily_green:
@@ -1064,12 +1127,12 @@ class StratMonitorApp(QMainWindow):
                 bull_patterns.insert(0, ("3-1-3 Bullish Expansion",
                     "Outside bar → inside compression → second outside bar overrunning both prior "
                     "ranges. Secondary institutional expansion sweep cleaning out trapped liquidity. "
-                    "Trigger fired at the inside bar's high; stop: the new 3's flush low; macro "
+                    "Trigger fired at the inside bar's high; stop: " + STOP_RULE + "; macro "
                     "target: the first 3's high extreme. High-velocity stop-run — require FTFC."))
             elif daily_red:
                 bear_patterns.insert(0, ("3-1-3 Bearish Expansion",
                     "Outside bar → inside bar → second outside bar through both prior ranges. "
-                    "Stop: the new 3's flush high; macro target: the first 3's low extreme. "
+                    "Stop: " + STOP_RULE + "; macro target: the first 3's low extreme. "
                     "Require full bearish FTFC — high-velocity configuration."))
 
         if len(ext) >= 3 and ext[-3] == '1' and up(ext[-2]) and up(ext[-1]):
@@ -1077,23 +1140,23 @@ class StratMonitorApp(QMainWindow):
                 "Inside bar broke up and immediately printed a second consecutive 2-Up with no "
                 "pause — institutional force generated follow-through without consolidation. "
                 "Add on each new 2 that holds direction; NEVER add on an inside bar or a 3 "
-                "mid-sequence. Stop walks to the prior bar's low with each confirmed bar."))
+                "mid-sequence. Stop: " + STOP_RULE + " (each add's own trigger)."))
         if len(ext) >= 3 and ext[-3] == '1' and dn(ext[-2]) and dn(ext[-1]):
             bear_patterns.append(("1-2-2 Momentum Bear (Down & Add)",
                 "Inside bar broke down then a second consecutive 2-Down with no pause. Add on "
-                "each new 2 down; never add on a 1 or 3 mid-sequence. Stop walks to the prior "
-                "bar's high with each confirming bar."))
+                "each new 2 down; never add on a 1 or 3 mid-sequence. Stop: " + STOP_RULE +
+                " (each add's own trigger)."))
 
         if len(ext) >= 3 and ext[-3] == '3' and dn(ext[-2]) and up(ext[-1]):
             bull_patterns.insert(0, ("3-2-2 Reversal",
                 "Outside bar → 2-Down stop-hunt past the 3's boundary → 2-Up snap-back. The "
                 "breakdown trapped late shorts deeply offside; the reclaim catches them. "
-                "Stop: the failed 2-Down's wick low. Macro target: the parent 3 bar's high. "
+                "Stop: " + STOP_RULE + ". Macro target: the parent 3 bar's high. "
                 "~55% hit rate per the guide but 'goes insane' when it kicks in — small risk."))
         if len(ext) >= 3 and ext[-3] == '3' and up(ext[-2]) and dn(ext[-1]):
             bear_patterns.insert(0, ("3-2-2 Reversal Bear",
                 "Outside bar → 2-Up spike past the 3's high → 2-Down snap-back. Late breakout "
-                "buyers trapped. Stop: the failed 2-Up's wick high. Macro target: the parent "
+                "buyers trapped. Stop: " + STOP_RULE + ". Macro target: the parent "
                 "3 bar's low extreme."))
 
         # ── double inside day: compression on compression ──
@@ -1124,16 +1187,16 @@ class StratMonitorApp(QMainWindow):
                         f"BELOW yesterday's 50% midpoint (${p_mid:.2f}) — a confirming "
                         f"<strong>Failed 2</strong>. Breakout buyers are trapped offside; high "
                         f"probability the bar fails its direction entirely or expands into a "
-                        f"<strong>Failed-2-Goes-3</strong> through yesterday's low. Tighten stops "
-                        f"on longs; the break of yesterday's low is the bear conversion.")
+                        f"<strong>Failed-2-Goes-3</strong> through yesterday's low. Longs: honor the "
+                        f"stop ({STOP_RULE}); the break of yesterday's low is the bear conversion.")
                 if f_l < float(pb['Low']) and f_c > p_mid:
                     failed2_bull = (
                         f"Today broke below yesterday's low (registered 2-Down) then reclaimed "
                         f"ABOVE yesterday's 50% midpoint (${p_mid:.2f}) — a confirming "
                         f"<strong>Failed 2</strong>. Breakdown sellers are trapped; high probability "
                         f"of a full directional failure or a <strong>Failed-2-Goes-3</strong> through "
-                        f"yesterday's high. Tighten stops on shorts; the break of yesterday's high "
-                        f"is the bull conversion.")
+                        f"yesterday's high. Shorts: honor the stop ({STOP_RULE}); the break of "
+                        f"yesterday's high is the bull conversion.")
         except Exception:
             pass
 
@@ -1301,57 +1364,68 @@ class StratMonitorApp(QMainWindow):
                 return strike, label, count
         return None, '', 0
 
-    def _select_contract(self, direction, chain, price, key_levels, scope='daily'):
-        """Pick the contract to actually buy for a directional setup.
+    def _select_contract(self, direction, chain, trigger, target, key_levels, scope='daily'):
+        """Pick the contract to actually buy for a directional setup. Strikes are
+        chosen relative to the TRIGGER (where the trade is entered), never today's
+        price — a gap between the two would otherwise land the pick deep ITM.
 
-        scope='daily'  → first OTM strike (guide: intraday/daily signal — slightly
-                         OTM, ~0.35-0.45 delta zone, high gamma).
-        scope='swing'  → ATM / first ITM strike (guide: weekly-signal plays buy
-                         ATM-or-ITM, delta 0.50+, so theta doesn't bleed the trade
-                         out while price chops in a daily mother bar before the
-                         outside-week magnitude move).
-        alt = the strike sitting on the nearest wall (cheaper, targets the OI
-              level directly). Returns a dict, or None if the chain side is empty."""
-        if not chain:
+        scope='daily'  → 1 strike OTM from the trigger (gamma on the break); falls
+                         back to ATM when that strike would sit past Target 1.
+        scope='swing'  → ATM at the trigger (more delta, less theta bleed while
+                         price chops before the weekly magnitude move).
+        alt = the strike nearest Target 1, when it lies beyond the primary.
+        Returns a dict, or None if the chain side is empty."""
+        if not chain or trigger <= 0:
             return None
         df = chain.get('calls') if direction == 'bull' else chain.get('puts')
         if df is None or df.empty:
             return None
 
         bull = direction == 'bull'
-        otm = df[df['strike'] >= price] if bull else df[df['strike'] <= price]
-        itm = df[df['strike'] <= price] if bull else df[df['strike'] >= price]
+        df = df.sort_values('strike').reset_index(drop=True)
+        strikes = df['strike'].astype(float)
+        atm_i = int((strikes - trigger).abs().idxmin())
+        otm_i = atm_i + 1 if bull else atm_i - 1
+        pick = 'atm'
+        primary_i = atm_i
+        if scope != 'swing' and 0 <= otm_i < len(df):
+            otm_k = float(strikes[otm_i])
+            past_target = target > 0 and (otm_k > target if bull else otm_k < target)
+            if not past_target:
+                primary_i, pick = otm_i, 'otm1'
+        primary = df.loc[primary_i]
 
-        primary = None
-        if scope == 'swing' and not itm.empty:
-            # ATM / slightly ITM: nearest strike on the ITM side of price
-            primary = itm.loc[itm['strike'].idxmax()] if bull else itm.loc[itm['strike'].idxmin()]
-        if primary is None:
-            if otm.empty:
-                return None
-            primary = otm.loc[otm['strike'].idxmin()] if bull else otm.loc[otm['strike'].idxmax()]
-
-        def _ask(row):
-            a = row.get('ask')
+        def _num(row, col):
+            a = row.get(col)
             return float(a) if a is not None and not pd.isna(a) and a > 0 else 0.0
 
-        wall_strike, wall_label, wall_ct = self._nearest_wall(direction, key_levels, price)
+        def _ask(row):
+            return _num(row, 'ask')
+
+        wall_strike, wall_label, wall_ct = self._nearest_wall(direction, key_levels, trigger)
 
         out = {
             'strike': float(primary['strike']),
             'ask':    _ask(primary),
+            'bid':    _num(primary, 'bid'),
+            'last':   _num(primary, 'lastPrice'),
+            'iv':     _num(primary, 'impliedVolatility'),
+            'expiry': chain.get('expiry'),
             'scope':  scope,
+            'pick':   pick,
+            'trigger': trigger,
             'wall_strike': wall_strike,
             'wall_label':  wall_label,
             'wall_ct':     wall_ct,
         }
 
-        if wall_strike:
-            i = (df['strike'] - wall_strike).abs().idxmin()
-            alt = df.loc[i]
-            if float(alt['strike']) != out['strike']:
-                out['alt_strike'] = float(alt['strike'])
+        if target > 0:
+            alt = df.loc[int((strikes - target).abs().idxmin())]
+            alt_k = float(alt['strike'])
+            if (alt_k > out['strike']) if bull else (alt_k < out['strike']):
+                out['alt_strike'] = alt_k
                 out['alt_ask']    = _ask(alt)
+                out['target']     = target
 
         return out
 
@@ -1380,8 +1454,8 @@ class StratMonitorApp(QMainWindow):
                         "follow-through in the SAME session = exit; do not hold for the far side of "
                         "the range while higher timeframes stay against you. A dip after a win is "
                         "NOT a setup; no re-entry without a fresh inside-bar break or a clean 2-1-2."),
-            'scout':   ("<strong style='color:#d8a0ff;'>Scout / starter size only.</strong> The tight "
-                        "wick stop is what carries the R/R. Add on the trigger reclaim — never average "
+            'scout':   ("<strong style='color:#d8a0ff;'>Scout / starter size only.</strong> Stop: "
+                        + STOP_RULE + ". Add on the trigger reclaim — never average "
                         "down into the wick."),
         }
         return notes.get(conviction, notes['partial'])
@@ -1404,10 +1478,16 @@ class StratMonitorApp(QMainWindow):
                    f"<strong style='color:{tc};'>${contract['wall_strike']:.2f}</strong> "
                    f"({contract['wall_ct']:,}) as immediate magnitude")
 
-        scope_note = (" &mdash; ATM/ITM strike per the weekly-signal rule (&Delta;&ge;0.50, "
-                      "theta protection through mother-bar chop)"
-                      if contract.get('scope') == 'swing'
-                      else " &mdash; first OTM strike per the daily-signal rule (&asymp;0.35&ndash;0.45 &Delta;, gamma)")
+        trig = contract.get('trigger', 0.0)
+        if contract.get('pick') == 'otm1':
+            scope_note = (f" &mdash; 1 strike OTM from the ${trig:.2f} trigger (daily signal: "
+                          f"gamma on the break)")
+        elif contract.get('scope') == 'swing':
+            scope_note = (f" &mdash; ATM at the ${trig:.2f} trigger (swing signal: more delta, "
+                          f"less theta bleed through mother-bar chop)")
+        else:
+            scope_note = (f" &mdash; ATM at the ${trig:.2f} trigger (Target 1 sits inside the next "
+                          f"strike, so 1-OTM would need a move past the target)")
         rows = setup_row("Contract",
             f"<strong style='color:{tc};'>${contract['strike']:.2f} {kind}</strong> ({ask_s}){scope_note}{why}")
 
@@ -1422,8 +1502,9 @@ class StratMonitorApp(QMainWindow):
                          "treat the debit as the full expected loss &mdash; it is not a "
                          "substitute for the primary strike.")
             rows += setup_row("Alt strike",
-                f"${contract['alt_strike']:.2f} {kind} ({alt_s}) &mdash; sits on the wall: "
-                f"cheaper, defined max loss, points straight at the OI level.{lotto}")
+                f"${contract['alt_strike']:.2f} {kind} ({alt_s}) &mdash; at Target 1 "
+                f"(${contract['target']:.2f}): cheaper and more leverage if T1 prints, but it "
+                f"needs the full move to get paid.{lotto}")
 
         rows += setup_row("Size", self._size_note(conviction))
         return rows
@@ -1433,21 +1514,64 @@ class StratMonitorApp(QMainWindow):
         carries the sizing discipline)."""
         return setup_row("Size", self._size_note(conviction))
 
-    def _premium_stop(self, entry_ask, reclaim_level, reclaim_color="#ff6b6b", pct=0.50):
-        """Invalidation is the UNDERLYING price level — full stop. Exiting on the
-        contract's P&L instead of the price level is the documented execution leak
-        (cutting correct directional reads on premium noise), so premium only
-        appears as a labeled catastrophe floor, never as the management signal."""
-        out = (f"The invalidation is the <strong>price level</strong>: underlying reclaims "
-               f"<strong style='color:{reclaim_color};'>${reclaim_level:.2f}</strong> = signal "
-               f"failed, exit. Manage off the underlying &mdash; NOT the option's P&amp;L; "
-               f"premium swings on an in-force signal are noise, not invalidation.")
-        if entry_ask and entry_ask > 0:
-            dollar = entry_ask * (1 - pct)
-            out += (f" (Catastrophe floor only: &minus;{int(pct * 100)}% premium "
-                    f"&approx; ${dollar:.2f} from ${entry_ask:.2f} &mdash; a disaster brake "
-                    f"for gaps, not a take-loss trigger while price holds the level.)")
-        return out
+    def _option_rr(self, contract, is_bull, spot, trigger, target):
+        """Model the contract at the trigger (entry) and at Target 1 after the hold
+        period's theta, rather than quoting today's ask. Risk is an
+        OPT_RR_DRAWDOWN loss of the entry premium.
+        Volatility is backed out of the live quote at the current spot price.
+        Entry pays half the spread over model value; exits give half back.
+        Returns None when the chain can't support an estimate."""
+        if not contract or not contract.get('expiry') or spot <= 0:
+            return None
+        et = ZoneInfo("America/New_York")
+        now = datetime.datetime.now(et)
+        try:
+            exp_date = datetime.date.fromisoformat(contract['expiry'])
+        except ValueError:
+            return None
+        expiry = datetime.datetime.combine(exp_date, datetime.time(16, 0), tzinfo=et)
+        year = 365.0 * 86400
+        T_now = (expiry - now).total_seconds() / year
+        if T_now <= 0:
+            return None
+        # The trigger can't fire while the market is shut, so entry is the next open.
+        entry_at = now
+        if now.weekday() >= 5 or now.time() >= datetime.time(16, 0):
+            entry_at = _add_trading_days(now, 1).replace(hour=9, minute=30, second=0, microsecond=0)
+        elif now.time() < datetime.time(9, 30):
+            entry_at = now.replace(hour=9, minute=30, second=0, microsecond=0)
+        T_entry = (expiry - entry_at).total_seconds() / year
+        if T_entry <= 0:
+            return None
+        hold = OPT_HOLD_DAYS.get(contract.get('scope'), 1)
+        exit_at = _add_trading_days(entry_at, hold)
+        T_exit = max(0.0, (expiry - exit_at).total_seconds()) / year
+
+        K, is_call = contract['strike'], is_bull
+        bid, ask = contract.get('bid', 0.0), contract.get('ask', 0.0)
+        has_spread = bid > 0 and ask > bid
+        quote = (bid + ask) / 2 if has_spread else (ask or contract.get('last', 0.0))
+        iv = implied_vol(quote, spot, K, T_now, is_call)
+        if iv is None and contract.get('iv', 0.0) >= 0.05:
+            iv = contract['iv']
+        if iv is None:
+            return None
+        half_spread = (ask - bid) / 2 if has_spread else 0.0
+
+        entry     = bs_price(trigger, K, T_entry, iv, is_call) + half_spread
+        at_target = max(0.0, bs_price(target, K, T_exit, iv, is_call) - half_spread)
+        risk   = entry * OPT_RR_DRAWDOWN
+        reward = at_target - entry
+        return {
+            'entry': entry, 'at_target': at_target,
+            'risk': risk, 'reward': reward,
+            'rr': reward / risk if risk > 0 else None,
+            'theta_cost': bs_price(target, K, T_entry, iv, is_call) - bs_price(target, K, T_exit, iv, is_call),
+            'iv': iv, 'hold': hold,
+            'delta': bs_delta(trigger, K, T_entry, iv, is_call),
+            'spread': (ask - bid) if has_spread else None,
+            'expires_first': exit_at >= expiry,
+        }
 
     @staticmethod
     def _classify_candle(o, h, l, c):
@@ -1712,7 +1836,7 @@ class StratMonitorApp(QMainWindow):
                     f"<td width='50%' style='vertical-align:top;padding-left:6px;'>{side_table('PUTS', put_rows)}</td>"
                     f"</tr></table>"
                     f"{footer}")
-            return html, key_levels, {'calls': calls_df, 'puts': puts_df}
+            return html, key_levels, {'calls': calls_df, 'puts': puts_df, 'expiry': target_expiry}
 
         except Exception as e:
             return f"<p style='color:#ff6b6b;padding:10px;'>Options chain error: {e}</p>", {}, {}
@@ -2435,9 +2559,7 @@ class StratMonitorApp(QMainWindow):
         # Scout target = the FIRST real resistance/support, not a far prior-week
         # extreme. From a wick-low entry the reclaim of the trigger (current_high)
         # is the first magnet, then the weekly open, then the prior-week high.
-        # Targeting the far prior-week extreme off a $1-risk wick stop inflated the
-        # nominal R/R into fantasy (25:1+); the magnitude was the tell that it was
-        # made up. Cap at the nearest level and carry the next rung for context.
+        # Cap at the nearest level and carry the next rung for context.
         _res_ladder = sorted({lv for lv in (current_high, weekly_open, prev_weekly_high)
                               if lv and lv > _wick_mid})
         ttout_target = _res_ladder[0] if _res_ladder else current_high * 1.01
@@ -2446,36 +2568,8 @@ class StratMonitorApp(QMainWindow):
                              if lv and lv < _wick_mid), reverse=True)
         ttout_target_b = _sup_ladder[0] if _sup_ladder else current_low * 0.99
         ttout_next_b   = _sup_ladder[1] if len(_sup_ladder) > 1 else 0.0
-        # ── STRUCTURAL stops (guide-conformant; replaces the old flat $1.00) ──
-        # The Strat's stop is a structural level, never a fixed dollar amount:
-        #   2-1-2 / 3-1-2 / 1-2-2 → opposite wick of the INSIDE bar;
-        #   2-2 / 3-2 / PMG / structural → opposite wick of the TRIGGER bar.
-        # A small ATR-scaled buffer sits past the wick so a to-the-tick sweep of
-        # the level doesn't stop the trade on noise. Scales with the instrument
-        # instead of treating NVDA and /ES risk as the same $1.
         prev_day_high = cache.get('prev_day_high', 0.0)
         prev_day_low  = cache.get('prev_day_low',  0.0)
-        _stop_buf = max(0.10 * daily_atr, 0.01 * 5) if daily_atr > 0 else max(0.001 * current_close, 0.05)
-
-        _INSIDE_STOP_PATTERNS = ('2-1-2', '3-1-2', '1-2-2', '3-1-3')
-        def _structural_stop(is_bull):
-            pats = bull_pats if is_bull else bear_pats
-            nm = pats[0][0] if pats else ''
-            inside_based = any(k in nm for k in _INSIDE_STOP_PATTERNS)
-            if is_bull:
-                wick = prev_day_low if (inside_based and 0 < prev_day_low <= current_low) else current_low
-                lbl  = ("opposite wick of the inside bar" if inside_based and wick == prev_day_low
-                        else "opposite wick of the trigger bar")
-                return wick - _stop_buf, lbl
-            wick = prev_day_high if (inside_based and prev_day_high >= current_high > 0) else current_high
-            lbl  = ("opposite wick of the inside bar" if inside_based and wick == prev_day_high
-                    else "opposite wick of the trigger bar")
-            return wick + _stop_buf, lbl
-
-        bull_stop, bull_stop_lbl = _structural_stop(True)
-        bear_stop, bear_stop_lbl = _structural_stop(False)
-        scout_stop      = current_low  - _stop_buf   # just past the wick being bought
-        scout_stop_b    = current_high + _stop_buf   # just past the wick being faded
 
         # ── pivot targets from 2-year daily data ──────────────────────────
         # Fetch one extra pivot beyond what we render: when a target coincides with a
@@ -2495,12 +2589,6 @@ class StratMonitorApp(QMainWindow):
         _min_dte    = 5 if (_swing_bull or _swing_bear) else 0
         options_html, key_levels, options_chain = self.fetch_live_options_html(
             yf_symbol, current_close, selected_expiry, min_dte=_min_dte)
-
-        # ── contracts to actually trade (primary + wall-sitting alt) ──────
-        bull_contract = self._select_contract('bull', options_chain, current_close, key_levels,
-                                              scope='swing' if _swing_bull else 'daily')
-        bear_contract = self._select_contract('bear', options_chain, current_close, key_levels,
-                                              scope='swing' if _swing_bear else 'daily')
 
         # ── magnet-zone annotator ─────────────────────────────────────────
         def magnet_note(price):
@@ -2863,34 +2951,84 @@ class StratMonitorApp(QMainWindow):
         bear_target_price = (_bear_real[0]['price'] if _bear_real else
                              (prev_weekly_low if prev_weekly_low > 0 else current_low * 0.985))
 
-        # ── "No magnitude = no trade" gate ────────────────────────────────
-        # Guide rule: before entry, measure trigger → first left pivot against the
-        # structural stop. If the magnitude can't cover the risk, the setup is a
-        # skip regardless of how clean the pattern reads.
+        # ── contracts to actually trade (primary + Target-1 alt) ──────────
+        bull_contract = self._select_contract('bull', options_chain, current_high, target1_price,
+                                              key_levels, scope='swing' if _swing_bull else 'daily')
+        bear_contract = self._select_contract('bear', options_chain, current_low, bear_target_price,
+                                              key_levels, scope='swing' if _swing_bear else 'daily')
+        scout_bull_contract = self._select_contract('bull', options_chain, scout_dip_high,
+                                                    ttout_target, key_levels)
+        scout_bear_contract = self._select_contract('bear', options_chain, scout_rip_low,
+                                                    ttout_target_b, key_levels)
+
+        # ── options R/R ───────────────────────────────────────────────────
+        # Prices the recommended contract through the trigger → Target 1 move
+        # (theta over the hold, spread in and out) and measures it against an
+        # OPT_RR_DRAWDOWN loss of the entry premium.
         RR_MIN = 1.5
-        def rr_row(trigger, stop, target, is_bull):
-            risk   = abs(trigger - stop)
-            reward = (target - trigger) if is_bull else (trigger - target)
-            if risk <= 0 or target <= 0:
+        def _rr_color(rr):
+            return "#5fdd8e" if rr >= 2.0 else ("#ffd070" if rr >= RR_MIN else "#ff6b6b")
+
+        def stop_row(trigger, target, is_bull, contract, trigger_lbl=None):
+            """The one stop rule: option down OPT_RR_DRAWDOWN, or price losing the
+            trigger level in force — whichever comes first."""
+            back = "below" if is_bull else "above"
+            col  = "#ff6b6b" if is_bull else "#5fdd8e"
+            dd   = int(OPT_RR_DRAWDOWN * 100)
+            opt  = f"<strong style='color:{col};'>option &minus;{dd}%</strong>"
+            if contract:
+                o = self._option_rr(contract, is_bull, current_close, trigger, target) if target > 0 else None
+                entry = o['entry'] if o else contract.get('ask', 0.0)
+                if entry > 0:
+                    kind = "C" if is_bull else "P"
+                    opt += (f" (&asymp; ${entry * (1 - OPT_RR_DRAWDOWN):.2f} on the "
+                            f"${contract['strike']:.2f}{kind} from &asymp; ${entry:.2f} "
+                            f"{'modeled entry' if o else 'ask'})")
+            lvl = trigger_lbl or f"the <strong style='color:{col};'>${trigger:.2f}</strong> trigger"
+            return setup_row("Stop",
+                f"{opt} <strong>or</strong> losing {lvl} in force &mdash; price trades back {back} "
+                f"it after the break = signal failed, exit. Whichever comes first. Enter the "
+                f"&minus;{dd}% as a stop order before entry &mdash; never held mentally.")
+
+        def rr_row(trigger, target, is_bull, contract=None):
+            if not contract:
                 return ""
-            rr = reward / risk
-            if reward <= 0:
-                return setup_row("R / R",
+            if target <= 0 or ((target - trigger) if is_bull else (trigger - target)) <= 0:
+                return setup_row("Opt R / R",
                     "<strong style='color:#ff6b6b;'>NO MAGNITUDE &mdash; SKIP.</strong> "
                     "The first real target sits at/behind the trigger; there is nothing to "
                     "trade to. No magnitude = no trade.")
-            if rr < RR_MIN:
-                return setup_row("R / R",
-                    f"<strong style='color:#ff6b6b;'>{rr:.1f} : 1 &mdash; NO MAGNITUDE, SKIP.</strong> "
-                    f"Reward to T1 (${reward:.2f}) does not cover the structural risk "
-                    f"(${risk:.2f}) at the {RR_MIN:.1f}:1 minimum. Wait for a setup whose "
-                    f"trigger sits farther from the first left pivot, or a tighter "
-                    f"structural stop &mdash; do not take it on pattern quality alone.")
-            col = "#5fdd8e" if rr >= 2.0 else "#ffd070"
-            return setup_row("R / R",
-                f"<strong style='color:{col};'>{rr:.1f} : 1</strong> to Target 1 "
-                f"(reward ${reward:.2f} vs structural risk ${risk:.2f}) &mdash; magnitude "
-                f"covers the stop; trade is takeable on the in-force tick.")
+            o = self._option_rr(contract, is_bull, current_close, trigger, target)
+            kind = "C" if is_bull else "P"
+            name = f"${contract['strike']:.2f}{kind}"
+            if o is None:
+                return setup_row("Opt R / R",
+                    f"<span style='color:#8a9ab0;'>{name}: not enough quote data to model "
+                    f"(no bid/ask or implied volatility on the chain right now).</span>")
+            hold_txt = f"{o['hold']} trading day{'s' if o['hold'] != 1 else ''}"
+            ask_now = contract.get('ask', 0.0)
+            vs_ask = f" vs ${ask_now:.2f} ask now" if ask_now > 0 else ""
+            dd = int(OPT_RR_DRAWDOWN * 100)
+            if o['reward'] <= 0:
+                head = (f"<strong style='color:#ff6b6b;'>NEGATIVE &mdash; theta/spread outrun the move.</strong> "
+                        f"{name} is worth &asymp; ${o['at_target']:.2f} at T1 after {hold_txt}, "
+                        f"below the &asymp; ${o['entry']:.2f} entry.")
+            else:
+                rr = o['rr']
+                head = (f"<strong style='color:{_rr_color(rr)};'>{rr:.1f} : 1</strong> "
+                        f"on {name} &mdash; &asymp; ${o['entry']:.2f} at the ${trigger:.2f} trigger{vs_ask}, "
+                        f"&asymp; ${o['at_target']:.2f} at T1 ${target:.2f} after {hold_txt} "
+                        f"(reward ${o['reward']:.2f} vs &minus;{dd}% drawdown ${o['risk']:.2f} per share).")
+            spread_s = (f"spread ${o['spread']:.2f} paid in and out" if o['spread'] is not None
+                        else "spread unknown (no live bid) &mdash; risk is understated")
+            detail = (f"&Delta; {abs(o['delta']):.2f} at trigger &middot; IV {o['iv'] * 100:.0f}% &middot; "
+                      f"theta over the hold &minus;${o['theta_cost']:.2f} &middot; {spread_s}.")
+            if o['expires_first']:
+                detail += (" <strong style='color:#ffd070;'>Contract expires before the hold ends"
+                           "</strong> &mdash; T1 value is intrinsic only.")
+            return setup_row("Opt R / R",
+                head + f"<br><span style='font-size:11px;color:#8a9ab0;'>{detail} "
+                f"Black-Scholes estimate on the chain's IV; ignores IV crush/expansion.</span>")
 
         # ── immediate magnitude (the prior bar's far extreme past the trigger) ──
         # First structural obligation of the break; exhaustion risk begins there.
@@ -2914,37 +3052,10 @@ class StratMonitorApp(QMainWindow):
                 f"reduce, hard reversal 2 = exit the runner. The pivot targets below are the macro "
                 f"boundary for runners only.")
 
-        # ── scalp / "instant-go" stop (the played-in-practice stop) ───────
-        # The cascade plays are structured with the stop just UNDER the trigger,
-        # not at the structural wick: a high-conviction break should go instantly,
-        # and price back below the trigger = the signal is failing (guide:
-        # instantaneous-move rule). This tight stop is what produces the headline
-        # 1:9 / 1:11 R/R against the weekly magnitude — it only exists if the
-        # break follows through immediately. The structural stop remains the
-        # swing-version risk.
-        _scalp_buf = (max(0.15 * daily_atr, 0.0025 * current_close)
-                      if daily_atr > 0 else max(0.0025 * current_close, 0.10))
-        bull_scalp_stop = current_high - _scalp_buf
-        bear_scalp_stop = current_low  + _scalp_buf
-
-        def scalp_stop_row(is_bull):
-            stop = bull_scalp_stop if is_bull else bear_scalp_stop
-            trig = current_high if is_bull else current_low
-            back = "below" if is_bull else "above"
-            col  = "#ff6b6b" if is_bull else "#5fdd8e"
-            return setup_row("Scalp stop",
-                f"<strong style='color:{col};'>${stop:.2f}</strong> (just {back} the trigger "
-                f"&mdash; instant-go rule). The cascade/scalp version of this play: a "
-                f"high-conviction break goes immediately; price back {back} the trigger after "
-                f"the in-force tick = it's broadening back against you &mdash; exit, don't wait "
-                f"for the structural stop. This tight stop is what makes the weekly-magnitude "
-                f"R/R real; the structural stop above is the swing version.")
-
-        # ── weekly-magnitude rows (the cascade play's headline target & R/R) ──
+        # ── weekly-magnitude rows (the cascade play's headline targets) ──
         # When a daily break dominoes into a weekly event, the trade's REAL targets
         # are the weekly level (weekly immediate magnitude) and the mother-bar
-        # extreme (weekly macro). R/R is quoted off the scalp stop — the way the
-        # play is actually structured — alongside the T1-vs-structural-stop gate.
+        # extreme (weekly macro).
         def weekly_mag_row(is_bull):
             live = (step_through_bull or analysis['domino_wk_bull']) if is_bull \
                    else (step_through_bear or analysis['domino_wk_bear'])
@@ -2957,22 +3068,13 @@ class StratMonitorApp(QMainWindow):
             gate = _near_gate_price(is_bull)
             if gate > 0 and abs(wk_lvl - gate) <= _cluster_tol():
                 return ""
-            trig = current_high if is_bull else current_low
             col  = "#5fdd8e" if is_bull else "#ff6b6b"
-            def _rr(t):
-                rew = (t - trig) if is_bull else (trig - t)
-                return rew / _scalp_buf if _scalp_buf > 0 and rew > 0 else 0.0
             txt = (f"Weekly immediate magnitude <strong style='color:{col};'>${wk_lvl:.2f}</strong> "
                    f"(prior week {'high' if is_bull else 'low'} &mdash; the weekly event level)")
-            rr1 = _rr(wk_lvl)
-            if rr1 > 0:
-                txt += f" &asymp; <strong>{rr1:.0f}:1</strong> off the scalp stop"
             if mb > 0:
-                rr2 = _rr(mb)
-                txt += (f"; mother-bar macro target <strong style='color:{col};'>${mb:.2f}</strong>"
-                        + (f" &asymp; <strong>{rr2:.0f}:1</strong>" if rr2 > 0 else ""))
-            txt += (". These R/Rs are only real under the instant-go rule &mdash; the tight stop "
-                    "dies the moment the break stalls. <strong>If the weekly magnitude prints "
+                txt += f"; mother-bar macro target <strong style='color:{col};'>${mb:.2f}</strong>"
+            txt += (". These targets are only in play under the instant-go rule &mdash; losing the "
+                    "trigger in force ends the trade. <strong>If the weekly magnitude prints "
                     "mid-week, that IS target exhaustion: bank it</strong> &mdash; holding "
                     "short-dated premium to Friday gives the win back (theta + snap-back).")
             return setup_row("Weekly mag", txt)
@@ -3553,8 +3655,8 @@ img { max-width:100%; height:auto; }
                     f"<strong style='color:#5fdd8e;'>Long confirms</strong> on a reclaim of the {tl} hammer high "
                     f"<strong style='color:#5fdd8e;'>${sh['h']:.2f}</strong> (a 2-up off the wick &mdash; the "
                     f"Triangle-They-Out long, Setup C). It should go almost immediately; if it stalls at that "
-                    f"high, limit sellers are parked there &mdash; wait for the re-break. Stop / invalidation: "
-                    f"the hammer wick low <strong style='color:#ff6b6b;'>${sh['l']:.2f}</strong>.")
+                    f"high, limit sellers are parked there &mdash; wait for the re-break. Stop: "
+                    f"{STOP_RULE} (the hammer high is the trigger).")
                 if len(_ham_tfs) > 1:
                     confirm += (f" <strong style='color:#5fdd8e;'>Escalation:</strong> hammers stacked on "
                                 f"{', '.join(_ham_tfs)} &mdash; the buyer is defending at multiple group levels.")
@@ -3580,8 +3682,7 @@ img { max-width:100%; height:auto; }
                 confirm = (
                     f"<strong style='color:#ff6b6b;'>Short confirms only</strong> on a break of the {tl} shooter low "
                     f"<strong style='color:#ff6b6b;'>${sh['l']:.2f}</strong> (a 2-down off the wick &mdash; the "
-                    f"Downside Scout, Setup C). Stop / invalidation: the shooter wick high "
-                    f"<strong style='color:#5fdd8e;'>${sh['h']:.2f}</strong>.")
+                    f"Downside Scout, Setup C). Stop: {STOP_RULE} (the shooter low is the trigger).")
                 if len(_sho_tfs) > 1:
                     confirm += (f" <strong style='color:#ff6b6b;'>Escalation:</strong> shooters stacked on "
                                 f"{', '.join(_sho_tfs)} &mdash; sellers defending at multiple group levels.")
@@ -4022,13 +4123,8 @@ img { max-width:100%; height:auto; }
                 + imm_mag_row(True)
                 + weekly_mag_row(True)
                 + target_rows(bull_targets, target1_price, target1_label, True)
-                + setup_row("Stop",
-                    f"<strong style='color:#ff6b6b;'>${bull_stop:.2f}</strong> ({bull_stop_lbl}, ATR-buffered). "
-                    f"If price drops back below this after going in force &mdash; signal failed, exit immediately. "
-                    f"Stop goes in the system as a stop order BEFORE entry &mdash; never held mentally.")
-                + rr_row(current_high, bull_stop, target1_price, True)
-                + scalp_stop_row(True)
-                + (setup_row("Opt stop", self._premium_stop(bull_contract['ask'], bull_stop)) if bull_contract else "")
+                + stop_row(current_high, target1_price, True, bull_contract)
+                + rr_row(current_high, target1_price, True, bull_contract)
                 + self._options_rows(setup_row, 'bull', bull_contract, bull_conv)
                 + chain_note_row(bull_chain_notes)
                 + setup_row("FTFC", ftfc_line)
@@ -4070,13 +4166,8 @@ img { max-width:100%; height:auto; }
                 + imm_mag_row(True)
                 + weekly_mag_row(True)
                 + target_rows(bull_targets, target1_price, target1_label, True)
-                + setup_row("Stop",
-                    f"<strong style='color:#ff6b6b;'>${bull_stop:.2f}</strong> ({bull_stop_lbl}, ATR-buffered). "
-                    f"Price back below this after going in force = signal failed, exit. "
-                    f"Stop entered in the system before the trade, never mental.")
-                + rr_row(current_high, bull_stop, target1_price, True)
-                + scalp_stop_row(True)
-                + (setup_row("Opt stop", self._premium_stop(bull_contract['ask'], bull_stop)) if bull_contract else "")
+                + stop_row(current_high, target1_price, True, bull_contract)
+                + rr_row(current_high, target1_price, True, bull_contract)
                 + self._options_rows(setup_row, 'bull', bull_contract, bull_conv)
                 + chain_note_row(bull_chain_notes)
                 + setup_row("FTFC", forced_ftfc)
@@ -4104,13 +4195,8 @@ img { max-width:100%; height:auto; }
                 + target_rows(bear_targets, bear_target_price,
                               f"${bear_target_price:.2f} ({'Prior Week Low' if prev_weekly_low > 0 else '~1.5% extension'})",
                               False)
-                + setup_row("Stop",
-                    f"<strong style='color:#5fdd8e;'>${bear_stop:.2f}</strong> ({bear_stop_lbl}, ATR-buffered). "
-                    f"Reclaim above this level = buyer defending, bear case invalidated. "
-                    f"Stop in the system before entry.")
-                + rr_row(current_low, bear_stop, bear_target_price, False)
-                + scalp_stop_row(False)
-                + (setup_row("Opt stop", self._premium_stop(bear_contract['ask'], bear_stop, "#5fdd8e")) if bear_contract else "")
+                + stop_row(current_low, bear_target_price, False, bear_contract)
+                + rr_row(current_low, bear_target_price, False, bear_contract)
                 + self._options_rows(setup_row, 'bear', bear_contract, bear_conv)
                 + chain_note_row(bear_chain_notes)
                 + setup_row("Expiry", expiry_guidance(step_through_bear, mother_bar_bear > 0, mother_bar_bear))
@@ -4152,13 +4238,8 @@ img { max-width:100%; height:auto; }
                 + target_rows(bear_targets, bear_target_price,
                               f"${bear_target_price:.2f} ({'Prior Week Low' if prev_weekly_low > 0 else '~1.5% extension'})",
                               False)
-                + setup_row("Stop",
-                    f"<strong style='color:#5fdd8e;'>${bear_stop:.2f}</strong> ({bear_stop_lbl}, ATR-buffered). "
-                    f"Reclaim above this level = buyer defending, bear case invalidated. "
-                    f"Stop in the system before entry.")
-                + rr_row(current_low, bear_stop, bear_target_price, False)
-                + scalp_stop_row(False)
-                + (setup_row("Opt stop", self._premium_stop(bear_contract['ask'], bear_stop, "#5fdd8e")) if bear_contract else "")
+                + stop_row(current_low, bear_target_price, False, bear_contract)
+                + rr_row(current_low, bear_target_price, False, bear_contract)
                 + self._options_rows(setup_row, 'bear', bear_contract, bear_conv)
                 + chain_note_row(bear_chain_notes)
                 + setup_row("FTFC", forced_bear_ftfc)
@@ -4178,7 +4259,7 @@ img { max-width:100%; height:auto; }
             f"<tr style='background:#1a0f2a;'><td style='padding:11px 16px;font-size:13px;"
             f"font-weight:700;color:#cc88ff;'>C &mdash; Triangle-They-Out Scout Entry"
             f"<span style='font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;"
-            f"background:#40207a;color:#d8a0ff;margin-left:8px;'>Tight-Stop Scout</span></td></tr>"
+            f"background:#40207a;color:#d8a0ff;margin-left:8px;'>Wick-Reclaim Scout</span></td></tr>"
             f"<tr style='background:#10091a;'><td style='padding:12px 16px;'>"
             f"<table width='100%' style='color:#e0d0f8;'>"
             + setup_row("Concept",
@@ -4197,18 +4278,14 @@ img { max-width:100%; height:auto; }
             + setup_row("Target",
                 f"First real resistance: <strong>${ttout_target:.2f}</strong> (the trigger reclaim)"
                 + (f", then ${ttout_next:.2f}" if ttout_next else "")
-                + f". Do not stretch to a far prior-week high off a $1 wick stop &mdash; that "
-                f"manufactures a fantasy R/R. Take the reclaim level first; trail only if it holds."
+                + f". Do not stretch to a far prior-week high &mdash; take the reclaim level "
+                f"first; trail only if it holds."
                 + (f" <strong style='color:#ffd070;'>Counter-trend with the higher timeframes down "
                    f"&mdash; fade only on the reclaim, scout size, first target then out.</strong>"
                    if bear_bias else ""))
-            + setup_row("Stop",
-                f"<strong style='color:#ff6b6b;'>${scout_stop:.2f}</strong> (ATR-buffered tick past the wick low) &mdash; "
-                f"the long scout stops below the wick it's buying, not at the bull trigger. "
-                f"The tight stop helps the R/R, but only against the nearby reclaim target above &mdash; "
-                f"not a distant magnet.")
-            + (setup_row("Opt stop", self._premium_stop(bull_contract['ask'], scout_stop)) if bull_contract else "")
-            + self._options_rows(setup_row, 'bull', bull_contract, 'scout')
+            + stop_row(scout_dip_high, ttout_target, True, scout_bull_contract,
+                       "the green reversal bar's high (the scout's trigger)")
+            + self._options_rows(setup_row, 'bull', scout_bull_contract, 'scout')
             + chain_note_row(bull_chain_notes)
             # ── DOWNSIDE: sweep the HIGH, reject down → short ─────────────────
             + scout_subhead("&#x2193; Downside Scout &mdash; short the upper-wick sweep", "#ffaaaa")
@@ -4222,17 +4299,13 @@ img { max-width:100%; height:auto; }
             + setup_row("Target",
                 f"First real support: <strong>${ttout_target_b:.2f}</strong> (the trigger break)"
                 + (f", then ${ttout_next_b:.2f}" if ttout_next_b else "")
-                + f". Take the nearby level first rather than projecting a far prior-week low off a "
-                f"$1 wick stop."
+                + f". Take the nearby level first rather than projecting a far prior-week low."
                 + (f" <strong style='color:#9feebc;'>Aligned with the higher timeframes down &mdash; "
                    f"this is the A-direction; can carry to the next rung once the first target pays.</strong>"
                    if bear_bias else ""))
-            + setup_row("Stop",
-                f"<strong style='color:#5fdd8e;'>${scout_stop_b:.2f}</strong> (ATR-buffered tick past the wick high) &mdash; "
-                f"the short scout stops above the wick it's fading, not at the bear trigger. A reclaim back "
-                f"over the high = the sweep was real demand, fade invalidated.")
-            + (setup_row("Opt stop", self._premium_stop(bear_contract['ask'], scout_stop_b, "#5fdd8e")) if bear_contract else "")
-            + self._options_rows(setup_row, 'bear', bear_contract, 'scout')
+            + stop_row(scout_rip_low, ttout_target_b, False, scout_bear_contract,
+                       "the red reversal bar's low (the scout's trigger)")
+            + self._options_rows(setup_row, 'bear', scout_bear_contract, 'scout')
             + chain_note_row(bear_chain_notes)
             + "</table></td></tr></table>")
 
@@ -4349,21 +4422,19 @@ img { max-width:100%; height:auto; }
                 f"Take 60&ndash;70% profits at {target1_label} &mdash; exhaustion risk begins there: "
                 f"watch the NEXT BAR, not price (inside = hold runner, shooter = reduce, hard 2-down = "
                 f"exit runner; runner stays on only while the 30/60-min stay green). "
-                f"Stop: <strong style='color:#ff6b6b;'>${bull_stop:.2f}</strong> ({bull_stop_lbl}).")
+                f"Stop: {STOP_RULE} (${current_high:.2f}).")
 
         vs += verdict_step("3", "scout",
-            f"<strong>TIGHT-STOP SCOUT (Setup C &mdash; either direction):</strong> "
+            f"<strong>WICK-RECLAIM SCOUT (Setup C &mdash; either direction):</strong> "
             f"<span style='color:#9feebc;'>Upside:</span> if price sweeps down to "
             f"${current_low:.2f}&ndash;${scout_dip_high:.2f} then prints a green reversal bar &rarr; "
-            f"go long, stop below the wick at <strong style='color:#ff6b6b;'>${scout_stop:.2f}</strong>, "
-            f"first target ${ttout_target:.2f} (reclaim)"
+            f"go long, first target ${ttout_target:.2f} (reclaim)"
             + (" &mdash; counter-trend, fade only" if bear_bias else "") + ". "
             f"<span style='color:#ffaaaa;'>Downside:</span> if price ripped up to "
             f"${scout_rip_low:.2f}&ndash;${current_high:.2f} then prints a red reversal bar &rarr; "
-            f"short, stop above the wick at <strong style='color:#5fdd8e;'>${scout_stop_b:.2f}</strong>, "
-            f"first target ${ttout_target_b:.2f}. "
-            f"The tight wick stop only helps R/R against the nearby first target above &mdash; "
-            f"take it, don't project a distant magnet off a $1 stop.")
+            f"short, first target ${ttout_target_b:.2f}. "
+            f"Stop either way: {STOP_RULE} (the reversal bar's extreme). "
+            f"Take the nearby first target &mdash; don't project a distant magnet.")
 
         if bear_pats:
             _bear_step_lbl = (f"PRIMARY &mdash; FTFC aligned (Setup B &mdash; {bear_pats[0][0]})"
@@ -4372,8 +4443,8 @@ img { max-width:100%; height:auto; }
                 f"<strong>{_bear_step_lbl}:</strong> "
                 f"Price opens flat, cannot reclaim ${current_close:.2f}, breaks ${current_low:.2f} "
                 f"with {etf_home}/SPY confirming &rarr; buy puts. "
-                f"Target ${bear_target_price:.2f}. Stop: <strong style='color:#5fdd8e;'>${bear_stop:.2f}</strong> "
-                f"({bear_stop_lbl}). Require clean in-force break before sizing up.")
+                f"Target ${bear_target_price:.2f}. Stop: {STOP_RULE} (${current_low:.2f}). "
+                f"Require clean in-force break before sizing up.")
 
         if analysis['domino_wk_bull'] or analysis['domino_wk_bear']:
             d_note = (f"Prior week high ${prev_weekly_high:.2f} sits between price and the bull trigger ${current_high:.2f}"
@@ -4459,17 +4530,17 @@ img { max-width:100%; height:auto; }
                 "<strong>caution: month/week are NOT both green, so this version is off the table per "
                 "the gapper rules</strong>; if taken anyway it's counter-trend scout size only: ")
              + f"wait for the first 15/30-min to go corrective RED first, then buy the red-to-green "
-             f"reversal; stop at the corrective bar's low. "
+             f"reversal; stop: {STOP_RULE}. "
              f"<strong style='color:{_r};'>Gap-up / sell (fade)</strong> &mdash; if the first 30-min goes "
              f"bright red OR prints a shooter/inside bar, sellers are using the gap: short the 2-down "
-             f"on the 30/60, stop above high of day. Never short into new lows &mdash; wait for the "
+             f"on the 30/60, stop: {STOP_RULE}. Never short into new lows &mdash; wait for the "
              f"corrective rip, short the lower high. A gap that goes outside bar (3) mid-morning = "
              f"conflict; take partials, don't add."), _g)
 
         ss += script_step("GAP DN", "Below the bear trigger &mdash; never buy into new lows",
             (f"Gap-down opens the bear trigger in force. <strong style='color:{_g};'>Gap-down / buy</strong> "
              f"&mdash; the failed-breakdown play: it must go corrective (bounce) FIRST; buy the first "
-             f"lower-high that reclaims the gap (3-1-2 or inside-30 up), stop below low of day. "
+             f"lower-high that reclaims the gap (3-1-2 or inside-30 up), stop: {STOP_RULE}. "
              f"<strong style='color:{_r};'>Kicking pattern check</strong>: if the first 30-min is a long "
              f"red bar with no upper wick and no bounce at all, FTFC kicked in at the open &mdash; that's "
              f"the most aggressive gap-down sell; do not knife-catch it, trade WITH it or stand aside. "
@@ -4490,7 +4561,7 @@ img { max-width:100%; height:auto; }
             (f"The first 15-min bar is the morning range; everything inside it afterward is mother-bar "
              f"chop &mdash; do not trade inside it. It hands you the day's two known pivots (high of day "
              f"/ low of day) to run the Setup C scout against: sweep of one side + reclaim = the "
-             f"triangle-they-out entry, stop just past the swept wick. The first 60-min bar is the daily "
+             f"triangle-they-out entry, stop: {STOP_RULE}. The first 60-min bar is the daily "
              f"group's vote &mdash; note its open price; it's the line FTFC management runs off all day."), "#8a9ab0")
 
         # ── second 30 ──
@@ -4509,7 +4580,7 @@ img { max-width:100%; height:auto; }
              f"direction = the add signal on the ladder (this is the 'came back for a second serving' "
              f"read). Inside-60 = consolidation, hold but don't add; the inside-60 BREAK is then itself an "
              f"actionable trigger. A second-60 reversing through the first hour's open = the daily group is "
-             f"being negated &mdash; tighten to the scalp stop. If price is at the trigger right at the "
+             f"being negated &mdash; exit on losing the trigger in force. If price is at the trigger right at the "
              f"flip with pivots stacked above, an inside-up on the flip is pivot-machine-gun fuel."), _p)
 
         # ── midday ──
@@ -4525,7 +4596,7 @@ img { max-width:100%; height:auto; }
         ss += script_step("2:00&ndash;4:00", "Afternoon drive &amp; time exhaustion",
             (f"The 2&ndash;3pm flip is where late setups emerge: inside-60 &rarr; triangle &rarr; 15-min "
              f"break out of the morning range = last-hour acceleration (the valid late 0DTE window &mdash; "
-             f"ATM/1-OTM only, stops walked every bar). Into the close, time exhaustion is real: a red day "
+             f"ATM/1-OTM only, stop: {STOP_RULE}). Into the close, time exhaustion is real: a red day "
              f"that can't make new lows in the final 10 minutes gets short-covered into the bell &mdash; "
              f"that strength often carries into tomorrow's open. Long green bar into the close = expect "
              f"profit-taking; reduce into the highs, don't add there. If holding overnight: only with the "
@@ -4540,7 +4611,7 @@ img { max-width:100%; height:auto; }
             f"<table width='100%'>{ss}</table>"
             f"<div style='font-size:11px;color:#6b7a8d;border-top:1px solid #1e2530;padding-top:8px;"
             f"margin-top:4px;'>Levels are tonight's numbers: bull trigger ${current_high:.2f} &middot; "
-            f"bear trigger ${current_low:.2f} &middot; structural stops ${bull_stop:.2f} / ${bear_stop:.2f} "
+            f"bear trigger ${current_low:.2f} &middot; stops: {STOP_RULE} "
             f"&middot; weekly open ${weekly_open:.2f}. Nothing here is a new signal &mdash; it's the "
             f"execution order for the setups above; the cards' triggers, stops and targets still govern.</div>"
             f"</td></tr></table>")
