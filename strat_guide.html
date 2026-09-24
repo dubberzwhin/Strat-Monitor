@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Strat Trading Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d0f;
+    --surface: #111518;
+    --surface2: #171c20;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaec;
+    --muted: #7a8490;
+    --accent: #00e5a0;
+    --accent2: #00b8ff;
+    --accent3: #ff6b35;
+    --accent4: #c084fc;
+    --gold: #f5c842;
+    --danger: #ff4d6d;
+    --warning: #ffb347;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .hero {
+    position: relative;
+    padding: 80px 48px 60px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,229,160,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: 200px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,184,255,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,229,160,0.3);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    font-size: 16px;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 20px 48px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,13,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .toc a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .toc a:hover { color: var(--text); border-color: var(--border2); background: var(--surface); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 48px 80px; }
+  .section {
+    padding-top: 64px;
+    border-top: 1px solid var(--border);
+    margin-top: 64px;
+  }
+  .section:first-child { border-top: none; margin-top: 48px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    min-width: 28px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .card-label.green { color: var(--accent); }
+  .card-label.blue { color: var(--accent2); }
+  .card-label.orange { color: var(--accent3); }
+  .card-label.purple { color: var(--accent4); }
+  .card-label.gold { color: var(--gold); }
+  .card-label.red { color: var(--danger); }
+  .card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .card p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+  .tactical-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .tactical-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  .tactical-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .tactical-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+  }
+  .tactical-img-container {
+    background: #06080a;
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    overflow: hidden;
+  }
+  .tactical-img-container svg { width: 100%; height: auto; display: block; }
+  .tactical-img-container img { max-width: 100%; height: auto; border-radius: 6px; display: block; }
+  .tactical-info h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .tactical-info p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+  .tactical-info ul { list-style: none; }
+  .tactical-info li {
+    font-size: 12px;
+    color: var(--muted);
+    padding-left: 14px;
+    position: relative;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .tactical-info li::before {
+    content: '\25AA';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-size: 10px;
+    top: 0;
+  }
+  .concept {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .concept-term {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 500;
+    padding-top: 2px;
+  }
+  .concept-def { font-size: 14px; color: var(--muted); line-height: 1.6; }
+  .concept-def strong { color: var(--text); font-weight: 500; }
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .signal-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .signal-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .signal-num.up { color: var(--accent); }
+  .signal-num.down { color: var(--danger); }
+  .signal-num.neutral { color: var(--gold); }
+  .signal-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .signal-desc { font-size: 12px; color: var(--muted); opacity: 0.7; line-height: 1.5; }
+  .rules-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .rules-list li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    font-size: 14px;
+    color: var(--muted);
+    padding: 14px 18px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    line-height: 1.6;
+  }
+  .rules-list li .icon {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    min-width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+  .icon.bull { background: rgba(0,229,160,0.12); color: var(--accent); }
+  .icon.bear { background: rgba(255,77,109,0.12); color: var(--danger); }
+  .icon.info { background: rgba(0,184,255,0.12); color: var(--accent2); }
+  .icon.warn { background: rgba(255,179,71,0.12); color: var(--warning); }
+  .thesis-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px; }
+  .thesis-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .thesis-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .thesis-table td:first-child { color: var(--text); font-weight: 500; font-size: 13px; white-space: nowrap; }
+  .thesis-table tr:last-child td { border-bottom: none; }
+  .thesis-table tr:hover td { background: var(--surface); }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    margin-right: 4px;
+  }
+  .tag.bull { background: rgba(0,229,160,0.1); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+  .tag.bear { background: rgba(255,77,109,0.1); color: var(--danger); border: 1px solid rgba(255,77,109,0.2); }
+  .tag.neutral { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.2); }
+  .tag.danger { background: rgba(255,77,109,0.1); color: var(--danger); border: 1px solid rgba(255,77,109,0.2); }
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 14px 18px;
+    background: rgba(0,229,160,0.04);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .callout.warn { border-color: var(--warning); background: rgba(255,179,71,0.04); }
+  .callout.info { border-color: var(--accent2); background: rgba(0,184,255,0.04); }
+  .callout.danger { border-color: var(--danger); background: rgba(255,77,109,0.04); }
+  .callout strong { color: var(--text); font-weight: 500; }
+  .tf-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+  .tf-label { font-family: 'DM Mono', monospace; color: var(--muted); min-width: 80px; font-size: 12px; }
+  .tf-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .tf-fill { height: 100%; border-radius: 3px; }
+  .tf-note { color: var(--muted); font-size: 12px; min-width: 140px; }
+  .options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .opt-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .opt-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .opt-card.intra::before { background: var(--accent2); }
+  .opt-card.swing::before { background: var(--accent4); }
+  .opt-card.long::before { background: var(--gold); }
+  .opt-card.zdtes::before { background: var(--accent); }
+  .opt-card h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .opt-meta { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .opt-meta.intra { color: var(--accent2); }
+  .opt-meta.swing { color: var(--accent4); }
+  .opt-meta.long { color: var(--gold); }
+  .opt-meta.zdtes { color: var(--accent); }
+  .opt-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .opt-card li { font-size: 13px; color: var(--muted); padding-left: 14px; position: relative; line-height: 1.5; }
+  .opt-card li::before { content: '\25B8'; position: absolute; left: 0; font-size: 11px; top: 1px; }
+  .opt-card.intra li::before { color: var(--accent2); }
+  .opt-card.swing li::before { color: var(--accent4); }
+  .opt-card.long li::before { color: var(--gold); }
+  .opt-card.zdtes li::before { color: var(--accent); }
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat-box {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .stat-val.blue { color: var(--accent2); }
+  .stat-val.gold { color: var(--gold); }
+  .stat-val.orange { color: var(--accent3); }
+  .stat-key { font-size: 12px; color: var(--muted); }
+  .quote {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    background: var(--surface);
+    font-style: italic;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    position: relative;
+  }
+  .quote::before {
+    content: '"';
+    font-family: 'Syne', sans-serif;
+    font-size: 60px;
+    color: var(--accent);
+    opacity: 0.2;
+    position: absolute;
+    top: -10px; left: 14px;
+    line-height: 1;
+    font-style: normal;
+    font-weight: 800;
+  }
+  .quote span { color: var(--text); font-style: normal; font-weight: 500; }
+  .sub-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 32px 0 16px;
+    letter-spacing: -0.01em;
+  }
+  .sub-title::before { content: '// '; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 14px; }
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+  }
+  @media (max-width: 700px) {
+    .hero, .toc, .container { padding-left: 20px; padding-right: 20px; }
+    .concept { grid-template-columns: 1fr; gap: 6px; }
+    .signal-grid { grid-template-columns: 1fr; }
+    footer { padding: 24px 20px; }
+    .tactical-body { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tactical-row { padding: 14px; }
+    .tactical-img-container { min-height: 120px; padding: 6px; }
+    .tactical-title { font-size: 14px; }
+    .tactical-info h4 { font-size: 12px; }
+    .tactical-info p, .tactical-info li { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="badge">Study Reference</span>
+  <h1>The <span>Strat</span><br>Trading Guide</h1>
+  <p>Comprehensive study reference built from concepts developed by Rob Smith. Covers core framework, analysis methodology, and options strategies.</p>
+</div>
+
+<nav class="toc">
+  <a href="#core">Core Framework</a>
+  <a href="#broadening-formations">Broadening Formations</a>
+  <a href="#signals">Signal System</a>
+  <a href="#analysis">Market Analysis</a>
+  <a href="#options-buying">Options Buying</a>
+  <a href="#intraday">Intraday</a>
+  <a href="#swing">Swing Options</a>
+  <a href="#longterm">Long-Term</a>
+  <a href="#zerod">Zero DTE</a>
+  <a href="#universes">Universes</a>
+  <a href="#advanced">High Conviction</a>
+</nav>
+
+<div class="container">
+<section class="section" id="core">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Core Framework Concepts</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="quote">
+    It's not probability &mdash; it's <span>evidence</span>. If everyone's buying SPY, it's going to all-time highs. If they're done buying, it's not going there. It's about evidence, not probability.
+  </div>
+
+  <h3 class="sub-title">The Strat Building Blocks</h3>
+
+  <div class="concept">
+    <div class="concept-term">Bar Types: 1, 2, 3</div>
+    <div class="concept-def"><strong>1 = Inside bar</strong> &mdash; current bar's high and low are inside prior bar's range. Consolidation. No directional signal. <strong>2 = Directional bar</strong> &mdash; takes out one side only. "2 up" = takes out prior high. "2 down" = takes out prior low. <strong>3 = Outside bar (Broadening Formation)</strong> &mdash; takes out both high and low of prior bar. Engulfs the previous bar entirely. This is price discovery.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Full Time Frame Continuity</div>
+    <div class="concept-def">When all time frames are aligned in the same direction &mdash; buyers or sellers present at every level. Full hierarchy from highest to lowest structural authority: <strong>Year &rarr; Quarter &rarr; Month &rarr; Week &rarr; Day &rarr; 60-min</strong>. Year and Quarter are the ultimate structural anchors &mdash; a lower-timeframe 2-up signal driving into an unmapped red Yearly open is running into major resistance. Month and Week govern intermediate trend. Day and 60-min determine immediate execution alignment. Minimum for a tradeable FTFC setup: Month + Week + Day aligned. Year and Quarter add conviction and tell you whether you're trading with or against the macro tide.</div>
+  </div>
+
+  <div class="concept" id="magnitude">
+    <div class="concept-term">Magnitude</div>
+    <div class="concept-def"><strong>The mathematical objective of a trade setup.</strong> Magnitude is the predetermined structural destination price must reach once an actionable signal goes in force. In The Strat, we do not guess targets using subjective extensions; your target is always the absolute extreme high or low of the previous bars to the left that form the boundaries of the local Broadening Formation.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">In Force (Trigger System)</div>
+    <div class="concept-def"><strong>The active execution state of a trade.</strong> A setup is merely conditional until price ticks exactly one cent past the triggering extreme of the previous bar (e.g., crossing $0.01 above a Bar 1's high to go "In Force Green," or $0.01 below a Bar 1's low to go "In Force Red"). <br>
+    <strong>Order Flow Execution:</strong> Going in force means passive limit orders are being cleared and aggressive market participants are actively lifting the ask or hitting the bid. <br>
+    <strong>Sizing &amp; Risk Logic:</strong> Never front-run a pattern; a trade does not exist until it is in force. Strat execution requires starting smaller at the initial lower-timeframe entry, then scaling into the position with size only as successive higher timeframes (15m &rarr; 30m &rarr; 60m) systematically cross their own trigger points and go in force in the same direction. If price drops back below the trigger line after going in force, the signal is immediately at risk of failing.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Broadening Formation</div>
+    <div class="concept-def">A structural pattern of expanding price ranges consisting of higher highs and lower lows, visualised whenever an outside bar forms.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Triangle They Out</div>
+    <div class="concept-def">When price makes a <strong>slight lower low after going up</strong> (or slight higher high after going down) before continuing the trend. This "stops out" loose long/short holders and reloads for a stronger move. Key phrase: "triangle they out or stop them out and reclaim."</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Rev Strat</div>
+    <div class="concept-def">A reversal setup. The most common: <strong>2-2 reversal</strong> (two down then two up) or <strong>3-2</strong> (outside bar then directional). A "2-2 reversal" on a timeframe means the bar before was down, now going up &mdash; taking out the prior high. The higher the time frame the reversal occurs on, the more powerful the move.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Simultaneous Break</div>
+    <div class="concept-def">When <strong>multiple correlated assets break a signal at the same time</strong>. E.g., SPY, QQQ, semis (SMH), and tech (XLK) all simultaneously going "2 up" on the 15-minute. This is <strong>highest evidence</strong> of algorithmic institutional buying. The more assets doing the same thing simultaneously, the more aggressive the buyer.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Mother Bar Problems</div>
+    <div class="concept-def">When price stays <strong>inside a prior bar for multiple subsequent bars</strong>. Example: "three hours stuck in the morning range" = three one-hour bars inside the first hour. Mother bar situations are choppy &mdash; the equilibrium must resolve. Don't get chopped up trading inside it. Wait for the break.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">The Flip</div>
+    <div class="concept-def">When a new time-frame bar opens &mdash; particularly the <strong>new 60-minute bar</strong>. "Mind the flip" = pay attention when the hour turns, because algorithms reset. The first 60-minute bar of the day = daily group. The second 60-minute bar = when 60-minute traders show their hand separately from the daily open.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Pivot Machine Gun</div>
+    <div class="concept-def">When price reclaims multiple pivots in rapid succession &mdash; "pivot, pivot, pivot, take them all out." This occurs when a key reversal breaks through a cluster of prior highs/lows, forcing short covers or stop-outs in sequence. Most powerful when aligned with FTFC.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Order Flow (Strat Context)</div>
+    <div class="concept-def"><strong>"The only way a stock goes green is if buyers are taking the offer."</strong> That is order flow. Sellers sell at the bid, buyers buy at the offer (ask). When you see a green bar, someone paid the ask. 80% of NYSE volume is algorithmic &mdash; algorithms are told WHEN to buy/sell at each time frame (monthly, weekly, daily, 60-min opens).</div>
+  </div>
+
+  <h3 class="sub-title">Key Rules for Holding Trades</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> When price doesn't reverse, you don't get out. If it's still 2 up on the time frame you entered, hold it.</li>
+    <li><span class="icon bull">&#10003;</span> When it does reach its target (broadening formation), call it "exhaustion risk" &mdash; consider reducing, not necessarily exiting.</li>
+    <li><span class="icon info">i</span> Learn what a reversal looks like &mdash; and hold the ones that don't come back. That's the skill.</li>
+    <li><span class="icon warn">!</span> A 15-minute signal cannot reverse the whole market. Context matters: how many time frames are aligned against you?</li>
+    <li><span class="icon bear">&#10007;</span> If a signal didn't work instantly (especially on a 3-2 setup), it's at risk of broadening back against you. Respect it.</li>
+  </ul>
+
+  <h3 class="sub-title">Time Frame Hierarchy (Strength of Signal)</h3>
+  <div style="margin-bottom: 24px;">
+    <div class="tf-bar"><span class="tf-label">Yearly</span><div class="tf-track"><div class="tf-fill" style="width:100%; background: var(--gold);"></div></div><span class="tf-note">Ultimate structural anchor</span></div>
+    <div class="tf-bar"><span class="tf-label">Quarterly</span><div class="tf-track"><div class="tf-fill" style="width:94%; background: var(--gold);"></div></div><span class="tf-note">Macro trend definition</span></div>
+    <div class="tf-bar"><span class="tf-label">Monthly</span><div class="tf-track"><div class="tf-fill" style="width:86%; background: var(--accent);"></div></div><span class="tf-note">Intermediate trend &mdash; sets bias</span></div>
+    <div class="tf-bar"><span class="tf-label">Weekly</span><div class="tf-track"><div class="tf-fill" style="width:72%; background: var(--accent);"></div></div><span class="tf-note">Weekly buyers confirm direction</span></div>
+    <div class="tf-bar"><span class="tf-label">Daily</span><div class="tf-track"><div class="tf-fill" style="width:55%; background: var(--accent2);"></div></div><span class="tf-note">Daily open = daily group arrives</span></div>
+    <div class="tf-bar"><span class="tf-label">60-min</span><div class="tf-track"><div class="tf-fill" style="width:40%; background: var(--accent2);"></div></div><span class="tf-note">Algorithms flip every 60 min</span></div>
+    <div class="tf-bar"><span class="tf-label">30-min</span><div class="tf-track"><div class="tf-fill" style="width:28%; background: var(--accent4);"></div></div><span class="tf-note">Short-term momentum signal</span></div>
+    <div class="tf-bar"><span class="tf-label">15-min</span><div class="tf-track"><div class="tf-fill" style="width:18%; background: var(--accent4);"></div></div><span class="tf-note">Intraday entry precision</span></div>
+    <div class="tf-bar"><span class="tf-label">5-min</span><div class="tf-track"><div class="tf-fill" style="width:9%; background: var(--warning);"></div></div><span class="tf-note">Fine-tuning / stop placement</span></div>
+  </div>
+
+  <div class="callout info">
+    <strong>The Freeway Analogy:</strong> If you get on the freeway going north and don't turn around, you're going to keep heading north. That's how full-time frame continuity works. The car (price) is ripping down the freeway. It's not about the probability it gets there &mdash; it IS getting there unless something forces it to turn around. That "turn" is a reversal signal on a higher time frame.
+  </div>
+</section>
+<section class="section" id="broadening-formations">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">The Geometry of Broadening Formations</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout info">
+    <strong>Market Architecture:</strong> Price movement is not linear; it is an expanding series of higher highs and lower lows driven by the systematic hunting of resting orders. Every single Bar 3 on your current timeframe is simply a fully realized broadening formation on a lower timeframe.
+  </div>
+
+  <h3 class="sub-title">Drawing Mechanics &amp; Boundaries</h3>
+  <div class="concept">
+    <div class="concept-term">Broadening Formation</div>
+    <div class="concept-def">An outside bar creates a broadening formation &mdash; price has taken out both sides. There are two distinct target levels within every broadening formation: <strong>Immediate Magnitude</strong> (the moment price ticks one cent past the opposite side of the triggering bar &mdash; e.g., in a 2-1-2 bullish reversal, immediate magnitude is achieved the instant price exceeds the high of the first 2-bar by one cent) and the <strong>Macro Target</strong> (the full outer boundary of the larger broadening formation). When immediate magnitude is hit, the candle has fulfilled its structural obligation &mdash; short-sellers are stopped out and early buyers take profits. This is "Exhaustion Risk." At immediate magnitude: lock in partial profits or tighten trailing stops on short-dated options. Reserve the macro/broadening formation boundary as the ultimate target for longer-dated positions. Not a signal to exit entirely &mdash; reassess and manage. <strong>Look left</strong> to read exhaustion context: if there is a cluster of prior highs or lows at your current level, that means everyone who bought or sold there before is now trapped at breakeven &mdash; their exits become the profit taking. The denser the prior activity to the left, the more significant the exhaustion risk at that level.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The Pivot Rule</div>
+    <div class="concept-def">Pick a prominent pivot high and connect it to a subsequent higher pivot high. Then, pick a prominent pivot low and connect it to a subsequent lower pivot low. Connect wicks not just bodies.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The Boundary Angle</div>
+    <div class="concept-def">Broadening formations provide cleaner structural signals when the drawn lines are relatively flat or gently diverging, rather than steeply vertical. If lines are too steep, price action tends to get pinned as inside bars rather than expanding cleanly to the boundaries.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The "Outside-In" Principle</div>
+    <div class="concept-def"><strong>How to Trade Broadening Formations:</strong> Because volatility expands toward the outer edges of a broadening formation, the core risk-mitigation rule emphasized by Strat practitioners is to trade from the outside in. When price extends to the upper or lower boundary of a drawn broadening formation, you do not chase the breakout. Instead, you wait for a lower-timeframe reversal pattern (such as a 2-2 or 2-1-2) to trigger at the boundary line. You enter the trade near the extreme edge, using the absolute high/low of the boundary as a tight structural stop, and ride the reversal back across the formation toward the opposing macro boundary.</div>
+  </div>
+
+  <h3 class="sub-title">Target Hierarchy: Look Left &amp; Magnitude</h3>
+  <div class="concept">
+    <div class="concept-term">The "Look Left" Ideology</div>
+    <div class="concept-def">Price moves through the markets by systematically taking out historical reference points. When an actionable signal triggers (e.g., a 2-2 reversal), you must immediately look left to find the pivot points of the previous bars. These wicks represent institutional stops, trapped counter-trend traders, and resting limit orders. Price is drawn to these levels like a magnet; once it clears them, the structural obligation of that specific timeframe candle is fulfilled, introducing immediate "Exhaustion Risk."</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Immediate Magnitude</div>
+    <div class="concept-def">The moment price ticks exactly one cent past the opposite side of the triggering bar. For example, in a 2-1-2 bullish reversal, immediate magnitude is achieved the instant price exceeds the high of the first 2-bar by one cent. Once reached, the candle has fulfilled its immediate structural obligation, introducing immediate <strong>Exhaustion Risk</strong>.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Macro Targets</div>
+    <div class="concept-def">The full outer boundary of the larger macro broadening formation. While immediate magnitude is used to lock in short-dated options premium, the macro boundary is the ultimate destination reserved for longer-dated swing positions or runners.</div>
+  </div>
+  <div class="callout warn"><strong>Zooming Out for Macro Magnitude:</strong> A common amateur error is trading a lower-timeframe signal (like a 15-minute 2-1-2) without zooming out to check the macro horizon (Daily, Weekly, Monthly). Zooming out allows you to see the larger Broadening Formation lines. If you enter an intraday trade right as price is pushing into the upper boundary of a Monthly Broadening Formation, your intraday long has zero macro magnitude &mdash; it is running directly into a wall of macro exhaustion. High-conviction setups occur when lower-timeframe magnitude aligns seamlessly with unfulfilled macro magnitude on zoomed-out charts.</div>
+
+  <div class="concept">
+    <div class="concept-term">Exhaustion Density</div>
+    <div class="concept-def">Look left to read exhaustion context: if there is a dense cluster of prior highs or lows at your target level, that means everyone who bought or sold there before is now trapped at breakeven. Their exits become your profit-taking wall. The denser the prior activity to the left, the more significant the profit-taking pressure will be.</div>
+  </div>
+
+  <h3 class="sub-title">Tactical Execution Rules</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>The Outside-In Principle:</strong> Because volatility expands toward the outer edges of a broadening formation, do not chase breakouts at the extreme boundaries. Instead, wait for a lower-timeframe reversal pattern (such as a 2-2 or 2-1-2) to trigger at the boundary line, allowing you to enter with a tight structural stop and ride the reversal back across the formation toward the opposing midline or macro boundary.</li>
+    <li><span class="icon warn">!</span> <strong>The Macro Horizon Check:</strong> A common amateur error is trading a lower-timeframe signal (like a 15-minute 2-1-2) directly into the upper boundary of a Monthly Broadening Formation. If you enter long right as macro exhaustion is hitting, your intraday trade has zero real magnitude. High-conviction setups require lower-timeframe entries to align seamlessly with unfulfilled macro magnitude on zoomed-out charts.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>The Blue Sky Trap:</strong> When an asset enters blue sky territory (All-Time Highs), you no longer have historical wicks to look left at. Never mistake a breakout into all-time highs as a trade with infinite magnitude. In these scenarios, magnitude is strictly governed by the outer expanding boundaries of your zoomed-out Broadening Formations. If you aren't drawing your macro lines on a weekly and monthly scale, you are trading blind.</li>
+  </ul>
+
+  <h3 class="sub-title">Magnitude Rules</h3>
+  <ul class="rules-list">
+    <li><span class="icon info">i</span> <strong>Measure Before You Leap:</strong> Before entering any trade, calculate the exact distance from the trigger price to the first pivot point on the left. If that profit margin cannot cover your structural stop-loss, do not take the trade. No magnitude = no trade.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>The Magnet Rule:</strong> When a higher timeframe bar goes in force (like a new Weekly 2-up), its natural destination is the high of the previous week. It will fight to reach that target unless stopped by an opposing reversal signal on a lower execution timeframe.</li>
+    <li><span class="icon warn">!</span> <strong>Honor Exhaustion Risk:</strong> When price hits your immediate magnitude level, expect an algorithmic pause or snap-back. Institutional algorithms are programmed to take profits and re-hedge at these exact structural boundaries. Protect your capital accordingly by scaling out.</li>
+  </ul>
+
+  <h3 class="sub-title">The 50% Rule &mdash; Halfway Mark</h3>
+  <div class="callout">
+    <strong>Rob Smith's early warning system.</strong> The exact midpoint of any prior bar's total range (high wick to low wick) acts as a structural decision boundary for the retracing bar that follows.
+  </div>
+  <div class="concept">
+    <div class="concept-term">Original Direction Holds</div>
+    <div class="concept-def">When a retracing candle <strong>fails to cross the 50% midpoint</strong> of the prior bar and rolls back over &mdash; the original direction is dominant. The sellers (or buyers) from the prior bar are still in control. This is the signal to hold the trade, add to it, or re-enter. The failed reclaim of the halfway mark confirms the prior bar's trend participants have not been dislodged.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Counter-Pressure Warning</div>
+    <div class="concept-def">When a retracing candle <strong>reclaims and closes above the 50% midpoint</strong> of the prior bar &mdash; aggressive counter-pressure is confirmed. The mathematical probability that the current bar will either fail its original direction entirely, or expand to become a Scenario 3 (outside bar), increases sharply. Use this as a trigger to tighten stops on existing positions, anticipate a Failed-2 reversal, or watch for a Failed-2-Goes-3 conversion on the forming candle.</div>
+  </div>
+</section>
+<section class="section" id="signals">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">Signal System &amp; Patterns</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <h3 class="sub-title">The Three Bar States</h3>
+  <div class="signal-grid">
+    <div class="signal-box">
+      <div class="signal-num neutral">1</div>
+      <div class="signal-label">Inside Bar</div>
+      <div class="signal-desc">Equilibrium. Consolidation. Do not trade inside the bar. Wait for resolution &mdash; it MUST break up or down. If 800+ names are inside bar simultaneously, massive move incoming.</div>
+    </div>
+    <div class="signal-box">
+      <div class="signal-num up">2&#8593;</div>
+      <div class="signal-label">Two Up (Directional)</div>
+      <div class="signal-desc">Buyer took out prior bar's high. Green = buyer present. When monthly, weekly, daily, and 60-min all show 2 up, that's FTFC up. GO with it.</div>
+    </div>
+    <div class="signal-box">
+      <div class="signal-num down">2&#8595;</div>
+      <div class="signal-label">Two Down (Directional)</div>
+      <div class="signal-desc">Seller took out prior bar's low. Red = seller present. Only meaningful for shorts when multiple time frames confirm. Don't fight FTFC up with a 15-min 2 down.</div>
+    </div>
+    <div class="signal-box">
+      <div class="signal-num up" style="color: var(--accent3);">3</div>
+      <div class="signal-label">Outside Bar</div>
+      <div class="signal-desc">Broadening formation. Takes out BOTH sides. Shows aggression. A 3-2 setup: outside bar followed by directional = powerful reversal or continuation signal.</div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Key Pattern Setups</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label green">Hammer Setup</div>
+      <h3>Hammer Reversal</h3>
+      <p>A red bar that closes well above its lows (hammer candle). Look for hammer on a lower time frame within a larger uptrend. "Hammer 15" followed by "hammer 30" = escalating confirmation. The hammer on the day sets up outside week targets.</p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Shooter Setup</div>
+      <h3>Shooter Reversal</h3>
+      <p>Opposite of hammer &mdash; green bar that closes near its lows. "Shooter 15 down" = bearish reversal attempt on 15-min. Only act on it if FTFC is also turning. A shooter into an uptrend is just triangle they out / profit taking.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Rev Strat 322</div>
+      <h3>3-2-2 Into Continuity</h3>
+      <p>Outside bar &rarr; two up &rarr; two up. Sequential confirmation of a reversal gaining momentum. Each "two" confirms the prior bar's direction. When all three align and FTFC kicks in: "there she goes." The 32 on a 30-min into the 60-min reversal is one of the best setups.</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Momentum Play</div>
+      <h3>Up and Add</h3>
+      <p>The add-in-force method. An inside bar (1) breaks directionally &mdash; that's your initial entry. Each subsequent bar that continues in the same direction without reversing is confirmation the buyer/seller is still present. You add to the position on each confirming bar, not all at once at the start.</p>
+      <p style="margin-top: 10px;">The sequence reads: <strong>1 &rarr; 2 &rarr; add &rarr; 2 &rarr; add &rarr; 2 &rarr; add.</strong> Every new directional bar that holds above (or below) the prior bar's open is the signal to add. You are scaling into a confirmed trend, not anticipating one. Stop walks up with each bar &mdash; to the prior bar's low if long, prior bar's high if short.</p>
+    </div>
+    <div class="card">
+      <div class="card-label orange">Gap &amp; Confirm</div>
+      <h3>Gap Up / Gap Down Setups</h3>
+      <p>Gap creates instant outside bars. The key: does the gap trigger an outside WEEK or outside MONTH? If so, massive target. "Gap up above the broadening formation" = highly bullish. Gap down into a reversal: look for 2 up bar on the 60 or 30 to confirm reversal.</p>
+    </div>
+    <div class="card">
+      <div class="card-label red">Reclaim Levels</div>
+      <h3>Reclaim the Range</h3>
+      <p>When price reclaims a prior level (last week's lows, monthly open, ATH), it traps shorts and pulls buyers back. "Once you reclaim a range, you have a target." Reclaiming last week's lows with a 22 reversal = 52-60% win rate, 2:1 reward/risk.</p>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Buyers discipline: never add on an inside bar or a 3 (outside bar).</strong> An inside bar mid-sequence means the momentum is pausing &mdash; wait for resolution. An outside bar means conflict &mdash; reduce, don't add. Only add when the bar closes as a clean directional 2 in your direction. Strong with gap-up into outside week scenarios where FTFC is fully aligned.
+  </div>
+
+  <h3 class="sub-title">Reclaim Mechanics &mdash; How &amp; Why It Works</h3>
+
+  <div class="callout">
+    <strong>Reclaiming a range is what converts a momentum signal into a targetable trade.</strong> Momentum alone has a direction but no defined destination. The moment price reclaims a prior range, the opposite side of that range becomes the structural target &mdash; always.
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">The Target Rule</div>
+    <div class="concept-def">When you reclaim a range, the target is always <strong>the other side of that range.</strong> Reclaim the lows of a prior bar &mdash; target is the highs of that same bar. Reclaim the highs &mdash; target the lows. This applies at every time frame. The broadening formation defines the range; the reclaim of one boundary sets the target at the opposite boundary. Without a reclaim, there is no mappable target &mdash; "momentum has signals but no targets." Never force a trade when price is sitting in the middle of a range with no reclaim in either direction.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Trapped Participants as Fuel</div>
+    <div class="concept-def">Every seller who entered inside a range that price has now reclaimed is trapped &mdash; their position is offside and their stop orders sit above the reclaim level. "Whoever sold in this range since we've reclaimed it, they're at risk of a three to the upside against them." Those trapped stops become the fuel for continuation. The more sellers trapped inside the reclaimed range, the more aggressive the squeeze when they're forced to cover. This is why reclaim moves often accelerate rather than stall &mdash; each stop triggered adds a buy order to the move.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">Reclaim Level Hierarchy</div>
+    <div class="concept-def">Not all reclaims carry equal weight. From weakest to strongest: <strong>reclaiming the morning range</strong> (intraday, targets high or low of day) &rarr; <strong>reclaiming last week's lows</strong> (52-60% win rate, winning trades ~2x losers, targets prior week's high) &rarr; <strong>reclaiming last month's lows</strong> (larger move, more time, monthly broadening formation target) &rarr; <strong>reclaiming last year's lows on a 2-2 month reversal</strong> (the biggest winning position type &mdash; yearly broadening formation target). The higher the time frame of the reclaimed range, the larger the target and the longer the trade can run.</div>
+  </div>
+
+  <div class="concept">
+    <div class="concept-term">What "No Reclaim" Looks Like</div>
+    <div class="concept-def">When price grinds inside a range for multiple bars without reclaiming either boundary &mdash; "three hours stuck in the middle of this, not reclaiming anything, not even reclaiming the week" &mdash; there is no trade. No reclaim means no target. Sitting in the middle of a range is maximum uncertainty. The correct response is to wait, not to guess direction. The range must resolve before a position is justified. If a name hasn't reclaimed a meaningful level in the time frame you're trading, move on to one that has.</div>
+  </div>
+
+  <h3 class="sub-title">Failed 2 &amp; Failed-2-Goes-3</h3>
+  <div class="callout warn">
+    <strong>One of the most violent and reliable reversal signals in The Strat.</strong> A Failed 2 represents a complete trapping of participants who chased the initial breakout &mdash; when that trap converts to a 3 (outside bar), the move is sudden, aggressive, and high-conviction.
+  </div>
+  <div class="concept">
+    <div class="concept-term">Failed 2 &mdash; Mechanics</div>
+    <div class="concept-def">A Failed 2 occurs when a bar breaks past the prior bar's high or low (registering as an active Scenario 2), then <strong>completely stalls, reverses back across its own opening price</strong>, and drives hard in the opposite direction &mdash; but not far enough to take out the prior bar's other side. The bar ends as a 2 in the opposite direction from where it started. Everyone who entered on the initial breakout is now trapped offside, and their stop orders become fuel for the reversal. The 50% midpoint of the prior bar is the key early warning &mdash; if the retracing candle stalls below the 50% level and rolls over, the failed 2 is confirming.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Failed-2-Goes-3 &mdash; Mechanics</div>
+    <div class="concept-def">When the reversing bar has enough momentum to break <strong>both sides</strong> of the prior bar's range &mdash; it structurally converts into a Scenario 3 (outside bar). This is the "Failed-2-Goes-3" and it is one of the most aggressive patterns available. It means the initial breakout buyers/sellers were not just stopped out &mdash; they were completely run over. The outside bar now becomes a broadening formation defining a new, wider macro target. Any subsequent inside bar (1) within this new outside bar becomes a high-probability 3-1-2 entry setup.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The 50% Rule &mdash; Early Warning</div>
+    <div class="concept-def">When a bar begins retracing against a strong prior directional bar, the <strong>exact 50% midpoint of the prior bar's total range</strong> (high to low, including wicks) acts as the structural boundary. If the retracing bar fails to cross the 50% mark and rolls over: original direction is dominant, the 2 is holding. If the retracing bar reclaims and closes above the 50% mark: counter-pressure is aggressive &mdash; high probability the current bar will either fail its direction entirely or expand to become a Scenario 3. Use the 50% level as a real-time trigger for tightening stops or anticipating a failed-2-goes-3 scenario.</div>
+  </div>
+
+  <h3 class="sub-title">Actionable Signals on the Charts</h3>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">2-1-2 Reversal</span>
+      <span class="tag neutral">Sector Rotations</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="#00e5a0" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">2-1-2 BULLISH REVERSAL</text>
+  <g>
+    <line x1="100" y1="80" x2="100" y2="260" stroke="#ff4d6d" stroke-width="3"/>
+    <rect x="85" y="110" width="30" height="120" fill="#ff4d6d" rx="2"/>
+    <text x="100" y="295" fill="#ff4d6d" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 2 (Down)</text>
+  </g>
+  <g>
+    <line x1="200" y1="130" x2="200" y2="210" stroke="#f5c842" stroke-width="3"/>
+    <rect x="185" y="145" width="30" height="50" fill="#f5c842" rx="2"/>
+    <text x="200" y="240" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 1 (Inside)</text>
+  </g>
+  <g>
+    <line x1="300" y1="60" x2="300" y2="190" stroke="#00e5a0" stroke-width="3"/>
+    <rect x="285" y="80" width="30" height="100" fill="#00e5a0" rx="2"/>
+    <text x="300" y="295" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 2 (Up)</text>
+    <line x1="170" y1="130" x2="330" y2="130" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="335" y="134" fill="#00b8ff" font-size="10" font-family="DM Mono">TRIGGER (1 Wick High)</text>
+  </g>
+  <text x="600" y="35" fill="#ff4d6d" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">2-1-2 BEARISH REVERSAL</text>
+  <g>
+    <line x1="500" y1="80" x2="500" y2="260" stroke="#00e5a0" stroke-width="3"/>
+    <rect x="485" y="100" width="30" height="130" fill="#00e5a0" rx="2"/>
+    <text x="500" y="295" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 2 (Up)</text>
+  </g>
+  <g>
+    <line x1="600" y1="120" x2="600" y2="200" stroke="#f5c842" stroke-width="3"/>
+    <rect x="585" y="135" width="30" height="50" fill="#f5c842" rx="2"/>
+    <text x="600" y="240" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 1 (Inside)</text>
+  </g>
+  <g>
+    <line x1="700" y1="140" x2="700" y2="290" stroke="#ff4d6d" stroke-width="3"/>
+    <rect x="685" y="160" width="30" height="110" fill="#ff4d6d" rx="2"/>
+    <text x="700" y="320" fill="#ff4d6d" font-size="12" font-family="DM Mono" text-anchor="middle">Bar 2 (Down)</text>
+    <line x1="570" y1="200" x2="730" y2="200" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="735" y="204" fill="#00b8ff" font-size="10" font-family="DM Mono">TRIGGER (1 Wick Low)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics</h4>
+        <p><strong>2-1-2 Bullish Reversal:</strong> Initiates via an established directional wave down (Bar 2 Down), pauses inside a corrective tightening candle (Bar 1), and triggers long positions the precise moment price violates the high boundary of the Bar 1 compression candle to print a new Bar 2 Up.</p>
+        <p><strong>2-1-2 Bearish Reversal:</strong> Starts within an upward wave (Bar 2 Up), catches an inside bar equilibrium (Bar 1), and breaks short/Puts as price violates the low of the inside bar to scale down into a Bar 2 Down.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">2-1-2 Continuation</span>
+      <span class="tag bull">Trend Continuation</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="30" fill="#00e5a0" font-size="15" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="1">2-1-2 BULLISH CONTINUATION</text>
+  <line x1="100" y1="80" x2="100" y2="260" stroke="#00e5a0" stroke-width="3"/>
+  <rect x="85" y="100" width="30" height="130" fill="#00e5a0" rx="2"/>
+  <text x="100" y="290" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+  <line x1="200" y1="130" x2="200" y2="210" stroke="#f5c842" stroke-width="3"/>
+  <rect x="185" y="145" width="30" height="50" fill="#f5c842" rx="2"/>
+  <text x="200" y="240" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">1 (Inside)</text>
+  <line x1="170" y1="130" x2="330" y2="130" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="335" y="134" fill="#00b8ff" font-size="10" font-family="DM Mono">TRIGGER (1 High)</text>
+  <line x1="300" y1="55" x2="300" y2="195" stroke="#00e5a0" stroke-width="4"/>
+  <rect x="285" y="70" width="30" height="115" fill="#00e5a0" rx="2"/>
+  <text x="300" y="290" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+  <line x1="85" y1="210" x2="320" y2="210" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="330" y="214" fill="#ffb347" font-size="9" font-family="DM Mono">STOP (1 Low)</text>
+  <text x="600" y="30" fill="#ff4d6d" font-size="15" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="1">2-1-2 BEARISH CONTINUATION</text>
+  <line x1="490" y1="100" x2="490" y2="280" stroke="#ff4d6d" stroke-width="3"/>
+  <rect x="475" y="120" width="30" height="130" fill="#ff4d6d" rx="2"/>
+  <text x="490" y="310" fill="#ff4d6d" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Down)</text>
+  <line x1="590" y1="150" x2="590" y2="230" stroke="#f5c842" stroke-width="3"/>
+  <rect x="575" y="165" width="30" height="50" fill="#f5c842" rx="2"/>
+  <text x="590" y="260" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">1 (Inside)</text>
+  <line x1="560" y1="230" x2="730" y2="230" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="735" y="234" fill="#00b8ff" font-size="10" font-family="DM Mono">TRIGGER (1 Low)</text>
+  <line x1="700" y1="165" x2="700" y2="320" stroke="#ff4d6d" stroke-width="4"/>
+  <rect x="685" y="180" width="30" height="130" fill="#ff4d6d" rx="2"/>
+  <text x="700" y="348" fill="#ff4d6d" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Down)</text>
+  <line x1="560" y1="150" x2="720" y2="150" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="725" y="154" fill="#ffb347" font-size="9" font-family="DM Mono">STOP (1 High)</text>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics</h4>
+        <p>The 2-1-2 Continuation identifies a trend that paused rather than reversed. Bar 1 makes a directional move. Bar 2 (inside bar) compresses entirely within Bar 1's range &mdash; the prior buyers or sellers are consolidating, not exiting. Bar 3 then breaks out in the <strong>same direction</strong> as Bar 1, confirming the original participants are still in control.</p>
+        <p>The critical distinction from the 2-1-2 Reversal: the inside bar breakout direction. Same direction = continuation. Opposite direction = reversal. The inside bar itself is neutral &mdash; it's the Bar 3 break that defines the trade.</p>
+        <ul>
+          <li><strong style="color:var(--accent)">Bullish Entry:</strong> Bar 3 breaks above Bar 2's high by $0.01</li>
+          <li><strong style="color:var(--danger)">Bearish Entry:</strong> Bar 3 breaks below Bar 2's low by $0.01</li>
+          <li><strong style="color:var(--warning)">Stop:</strong> Opposite wick of the inside bar (Bar 2)</li>
+          <li><strong style="color:var(--accent2)">Target:</strong> Broadening formation boundary in the direction of the move. Most common in strong FTFC environments &mdash; add on each subsequent 2 that holds direction.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">1-2-2 Continuation</span>
+      <span class="tag bull">Momentum Breakout</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="30" fill="#00e5a0" font-size="15" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="1">1-2-2 BULLISH MOMENTUM</text>
+  <line x1="90" y1="130" x2="90" y2="230" stroke="#f5c842" stroke-width="3"/>
+  <rect x="75" y="145" width="30" height="70" fill="#f5c842" rx="2"/>
+  <text x="90" y="260" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">1 (Inside)</text>
+  <line x1="65" y1="130" x2="220" y2="130" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="225" y="134" fill="#00b8ff" font-size="10" font-family="DM Mono">ENTRY TRIGGER</text>
+  <line x1="200" y1="70" x2="200" y2="220" stroke="#00e5a0" stroke-width="4"/>
+  <rect x="185" y="85" width="30" height="120" fill="#00e5a0" rx="2"/>
+  <text x="200" y="290" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Up) Add</text>
+  <line x1="310" y1="30" x2="310" y2="180" stroke="#00e5a0" stroke-width="4"/>
+  <rect x="295" y="45" width="30" height="110" fill="#00e5a0" rx="2"/>
+  <text x="310" y="290" fill="#00e5a0" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Up) Add</text>
+  <line x1="65" y1="230" x2="325" y2="230" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="330" y="234" fill="#ffb347" font-size="9" font-family="DM Mono">STOP (1 Low)</text>
+  <text x="600" y="30" fill="#ff4d6d" font-size="15" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="1">1-2-2 BEARISH MOMENTUM</text>
+  <line x1="490" y1="130" x2="490" y2="230" stroke="#f5c842" stroke-width="3"/>
+  <rect x="475" y="145" width="30" height="70" fill="#f5c842" rx="2"/>
+  <text x="490" y="260" fill="#f5c842" font-size="12" font-family="DM Mono" text-anchor="middle">1 (Inside)</text>
+  <line x1="460" y1="230" x2="620" y2="230" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <text x="625" y="234" fill="#00b8ff" font-size="10" font-family="DM Mono">ENTRY TRIGGER</text>
+  <line x1="600" y1="140" x2="600" y2="300" stroke="#ff4d6d" stroke-width="4"/>
+  <rect x="585" y="155" width="30" height="120" fill="#ff4d6d" rx="2"/>
+  <text x="600" y="328" fill="#ff4d6d" font-size="12" font-family="DM Mono" text-anchor="middle">2 (Down) Add</text>
+  <line x1="710" y1="175" x2="710" y2="340" stroke="#ff4d6d" stroke-width="4"/>
+  <rect x="695" y="195" width="30" height="130" fill="#ff4d6d" rx="2"/>
+  <text x="710" y="358" fill="#ff4d6d" font-size="10" font-family="DM Mono" text-anchor="middle">2 (Down) Add</text>
+  <line x1="460" y1="130" x2="720" y2="130" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="725" y="134" fill="#ffb347" font-size="9" font-family="DM Mono">STOP (1 High)</text>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics</h4>
+        <p>The 1-2-2 is a raw momentum signal &mdash; the market breaks out of an inside bar and immediately prints a second consecutive directional bar with no consolidation in between. The absence of an inside bar between the two 2s means the initial break had enough institutional force to generate follow-through without pausing.</p>
+        <p>This is the "Up and add" in action. Bar 1 (inside bar) breaks &mdash; that's the first entry. Bar 2 prints and holds direction &mdash; add. Bar 3 continues without reversing &mdash; add again. Each additional 2 that follows is another add signal as long as bars don't reverse.</p>
+        <ul>
+          <li><strong style="color:var(--accent)">Bullish Entry:</strong> Inside bar breaks above its high by $0.01 &mdash; first position</li>
+          <li><strong style="color:var(--danger)">Bearish Entry:</strong> Inside bar breaks below its low by $0.01 &mdash; first position</li>
+          <li><strong style="color:var(--warning)">Stop:</strong> Opposite wick of the inside bar throughout the sequence</li>
+          <li><strong style="color:var(--accent2)">Add Rule:</strong> Add on each new 2 that holds direction. Never add on an inside bar mid-sequence &mdash; wait for resolution. Stop walks with each confirmed bar.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">1 Bar Rev Strat (1-3)</span>
+      <span class="tag danger">Intra-Bar Liquidity Grab</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">1-3 BULLISH REVERSAL (DOWN-TO-UP)</text>
+  <g>
+    <line x1="120" y1="130" x2="120" y2="210" stroke="var(--gold)" stroke-width="3"/>
+    <rect x="105" y="145" width="30" height="50" fill="var(--gold)" rx="2"/>
+    <text x="120" y="245" fill="var(--gold)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+    <line x1="90" y1="210" x2="260" y2="210" stroke="var(--danger)" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="175" y="225" fill="var(--danger)" font-size="9" font-family="DM Mono" text-anchor="middle">FALSE BREAKOUT FLUSH</text>
+  </g>
+  <g>
+    <line x1="260" y1="60" x2="260" y2="260" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="245" y="80" width="30" height="140" fill="var(--accent)" rx="2"/>
+    <text x="260" y="295" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3 (Outside)</text>
+    <line x1="90" y1="130" x2="290" y2="130" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="295" y="134" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (1 High Reclaim)</text>
+  </g>
+  <text x="600" y="35" fill="var(--danger)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">1-3 BEARISH REVERSAL (UP-TO-DOWN)</text>
+  <g>
+    <line x1="520" y1="130" x2="520" y2="210" stroke="var(--gold)" stroke-width="3"/>
+    <rect x="505" y="145" width="30" height="50" fill="var(--gold)" rx="2"/>
+    <text x="520" y="245" fill="var(--gold)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+    <line x1="490" y1="130" x2="660" y2="130" stroke="var(--accent)" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="575" y="115" fill="var(--accent)" font-size="9" font-family="DM Mono" text-anchor="middle">FALSE BREAKOUT FLUSH</text>
+  </g>
+  <g>
+    <line x1="660" y1="60" x2="660" y2="260" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="645" y="130" width="30" height="110" fill="var(--danger)" rx="2"/>
+    <text x="660" y="295" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3 (Outside)</text>
+    <line x1="490" y1="210" x2="690" y2="210" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="695" y="214" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (1 Low Reclaim)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>The 1-3 Reversal represents a pure intra-bar liquidity grab. Instead of taking multiple bars to develop a reversal sequence, a single candle opens inside the prior range, intentionally breaks past one extreme of the inside bar to activate breakout stops, completely runs out of breath, and then violently reverses to traverse the entire container range during that same period.</p>
+        <ul>
+          <li><strong>False Breakout Flush:</strong> Captures the sudden failure of an immediate directional breakout attempt.</li>
+          <li><strong>Range Traverse Target:</strong> Once the inside bar's high or low is reclaimed, the macro target is immediately set to the absolute opposite end of that original mother bar structure.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">3-1-3</span>
+      <span class="tag danger">Structural Expansion Sweep</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-1-3 BULLISH EXPANSION</text>
+  <g>
+    <line x1="110" y1="80" x2="110" y2="280" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="95" y="110" width="30" height="130" fill="var(--danger)" rx="2"/>
+    <text x="110" y="305" fill="var(--danger)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">Bar 1 (3)</text>
+    <line x1="80" y1="80" x2="310" y2="80" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="180" y="73" fill="var(--accent)" font-size="9" font-family="DM Mono">MACRO TARGET (BAR 1 HIGH)</text>
+  </g>
+  <g>
+    <line x1="200" y1="130" x2="200" y2="230" stroke="var(--gold)" stroke-width="2"/>
+    <rect x="185" y="150" width="30" height="60" fill="var(--gold)" rx="2"/>
+    <text x="200" y="305" fill="var(--gold)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">Bar 2 (1)</text>
+    <line x1="170" y1="130" x2="310" y2="130" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="230" y="123" fill="var(--accent2)" font-size="9" font-family="DM Mono">TRIGGER (BAR 2 HIGH)</text>
+  </g>
+  <g>
+    <line x1="310" y1="50" x2="310" y2="310" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="295" y="70" width="30" height="190" fill="var(--accent)" rx="2"/>
+    <text x="310" y="335" fill="var(--accent)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">Bar 3 (3)</text>
+    <line x1="270" y1="310" x2="330" y2="310" stroke="var(--warning)" stroke-width="1.5"/>
+    <text x="250" y="323" fill="var(--warning)" font-size="9" font-family="DM Mono" text-anchor="end">STOP LOSS</text>
+  </g>
+  <text x="600" y="35" fill="var(--danger)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-1-3 BEARISH EXPANSION</text>
+  <g>
+    <line x1="490" y1="80" x2="490" y2="280" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="475" y="110" width="30" height="130" fill="var(--accent)" rx="2"/>
+    <text x="490" y="305" fill="var(--accent)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+    <line x1="460" y1="280" x2="690" y2="280" stroke="var(--danger)" stroke-width="1" stroke-dasharray="3,3"/>
+    <text x="560" y="273" fill="var(--danger)" font-size="9" font-family="DM Mono">MACRO TARGET (BAR 1 LOW)</text>
+  </g>
+  <g>
+    <line x1="590" y1="130" x2="590" y2="230" stroke="var(--gold)" stroke-width="2"/>
+    <rect x="575" y="150" width="30" height="60" fill="var(--gold)" rx="2"/>
+    <text x="590" y="305" fill="var(--gold)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+    <line x1="560" y1="230" x2="690" y2="230" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="615" y="223" fill="var(--accent2)" font-size="9" font-family="DM Mono">TRIGGER (BAR 2 LOW)</text>
+  </g>
+  <g>
+    <line x1="690" y1="50" x2="690" y2="310" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="675" y="100" width="30" height="190" fill="var(--danger)" rx="2"/>
+    <text x="690" y="335" fill="var(--danger)" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+    <line x1="650" y1="50" x2="710" y2="50" stroke="var(--warning)" stroke-width="1.5"/>
+    <text x="640" y="63" fill="var(--warning)" font-size="9" font-family="DM Mono" text-anchor="end">STOP LOSS</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>The 3-1-3 sequence details an advanced structural expansion pattern. The market displays extreme initial volatility printing a 3 bar, settles briefly into tight equilibrium compression printing a 1 bar, and then experiences a subsequent, secondary institutional expansion sweep printing another 3 bar that forcefully overruns the outer parameters of both prior bars to clean out trapped liquidity.</p>
+        <ul>
+          <li><strong style="color:var(--accent2)">Bullish Entry:</strong> Orders trigger the moment Bar 3 crosses and reclaims Bar 2 High + $0.01.</li>
+          <li><strong style="color:var(--danger)">Bearish Entry:</strong> Orders trigger the moment Bar 3 crosses down through Bar 2 Low - $0.01.</li>
+          <li><strong style="color:var(--warning)">Stop-Loss:</strong> Hard structural levels sit fixed at the absolute high/low wick extreme created by Bar 3's initial flush.</li>
+          <li><strong style="color:var(--accent)">Target:</strong> Immediate magnitude at Bar 2's break; macro magnitude extends to Bar 1's High/Low extreme.</li>
+          <li><strong style="color:var(--danger)">Risk Warning:</strong> A high-velocity institutional stop-running configuration. Ensure full higher-timeframe continuity matches your direction.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">Pivot Machine Gun (PMG)</span>
+      <span class="tag danger">5-Bar Liquidity Cascade</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 380" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="380" stroke-dasharray="4"/>
+    <line x1="0" y1="190" x2="800" y2="190" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="30" fill="var(--danger)" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="1">PMG BEARISH (LIQUIDITY FLUSH)</text>
+  <g opacity="0.85">
+    <line x1="50" y1="280" x2="50" y2="320" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="40" y="290" width="20" height="25" fill="var(--accent)" rx="1"/>
+    <line x1="85" y1="240" x2="85" y2="285" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="75" y="250" width="20" height="30" fill="var(--accent)" rx="1"/>
+    <line x1="120" y1="200" x2="120" y2="245" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="110" y="210" width="20" height="30" fill="var(--accent)" rx="1"/>
+    <line x1="155" y1="160" x2="155" y2="205" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="145" y="170" width="20" height="30" fill="var(--accent)" rx="1"/>
+    <line x1="190" y1="110" x2="190" y2="165" stroke="var(--accent)" stroke-width="2"/>
+    <rect x="180" y="120" width="20" height="40" fill="var(--accent)" rx="1"/>
+  </g>
+  <g>
+    <line x1="260" y1="110" x2="260" y2="320" stroke="var(--danger)" stroke-width="4"/>
+    <rect x="245" y="120" width="30" height="195" fill="var(--danger)" rx="2"/>
+    <text x="260" y="340" fill="var(--danger)" font-size="12" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Dn)</text>
+    <line x1="180" y1="165" x2="280" y2="165" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="285" y="168" fill="var(--accent2)" font-size="9" font-family="DM Mono">ENTRY (Bar 5 Low)</text>
+    <line x1="40" y1="320" x2="280" y2="320" stroke="var(--danger)" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="285" y="324" fill="var(--danger)" font-size="9" font-family="DM Mono">TARGET (Bar 1 Low)</text>
+  </g>
+  <text x="600" y="30" fill="var(--accent)" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="1">PMG BULLISH (LIQUIDITY RUN)</text>
+  <g opacity="0.85">
+    <line x1="450" y1="110" x2="450" y2="150" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="440" y="115" width="20" height="30" fill="var(--danger)" rx="1"/>
+    <line x1="485" y1="145" x2="485" y2="190" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="475" y="150" width="20" height="35" fill="var(--danger)" rx="1"/>
+    <line x1="520" y1="185" x2="520" y2="230" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="510" y="190" width="20" height="35" fill="var(--danger)" rx="1"/>
+    <line x1="555" y1="225" x2="555" y2="270" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="545" y="230" width="20" height="35" fill="var(--danger)" rx="1"/>
+    <line x1="590" y1="265" x2="590" y2="320" stroke="var(--danger)" stroke-width="2"/>
+    <rect x="580" y="270" width="20" height="45" fill="var(--danger)" rx="1"/>
+  </g>
+  <g>
+    <line x1="660" y1="110" x2="660" y2="320" stroke="var(--accent)" stroke-width="4"/>
+    <rect x="645" y="115" width="30" height="200" fill="var(--accent)" rx="2"/>
+    <text x="660" y="340" fill="var(--accent)" font-size="12" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+    <line x1="580" y1="265" x2="680" y2="265" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="685" y="268" fill="var(--accent2)" font-size="9" font-family="DM Mono">ENTRY (Bar 5 High)</text>
+    <line x1="440" y1="110" x2="680" y2="110" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="3,2"/>
+    <text x="685" y="114" fill="var(--accent)" font-size="9" font-family="DM Mono">TARGET (Bar 1 High)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>The 5-Bar PMG is a catastrophic failure pattern for one-way structural trends. When an asset pushes forward for 5 consecutive bars without deeper structural consolidation, it leaves behind a linear path of vulnerable protective stops. The moment the 6th candle breaks the immediate prior bar's extreme, it triggers a cascade of stop-market liquidations that cuts completely back through all 5 preceding bars like a machine gun.</p>
+        <ul>
+          <li><strong style="color:var(--accent2)">Bullish Reclaim Entry:</strong> Trigger 1 penny above the Bar 5 Wick High following a 5-candle down-ladder.</li>
+          <li><strong style="color:var(--danger)">Bearish Reclaim Entry:</strong> Trigger 1 penny below the Bar 5 Wick Low following a 5-candle up-ladder.</li>
+          <li><strong style="color:var(--warning)">Invalidation:</strong> Hard stop just past the absolute high or low apex of the reversal candle body.</li>
+          <li><strong style="color:var(--accent)">Macro Target:</strong> A complete reversal targeting the outer wick boundary of the original Bar 1 origin node.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">2-2 Reversal</span>
+      <span class="tag bull">Immediate Momentum Failure</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">2-2 BULLISH REVERSAL</text>
+  <g>
+    <line x1="120" y1="90" x2="120" y2="250" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="105" y="110" width="30" height="120" fill="var(--danger)" rx="2"/>
+    <text x="120" y="285" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Down)</text>
+  </g>
+  <g>
+    <line x1="260" y1="50" x2="260" y2="210" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="245" y="75" width="30" height="110" fill="var(--accent)" rx="2"/>
+    <text x="260" y="285" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+    <line x1="90" y1="90" x2="290" y2="90" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="295" y="94" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (2 High)</text>
+  </g>
+  <text x="600" y="35" fill="var(--danger)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">2-2 BEARISH REVERSAL</text>
+  <g>
+    <line x1="520" y1="90" x2="520" y2="250" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="505" y="110" width="30" height="120" fill="var(--accent)" rx="2"/>
+    <text x="520" y="285" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+  </g>
+  <g>
+    <line x1="660" y1="120" x2="660" y2="290" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="645" y="140" width="30" height="120" fill="var(--danger)" rx="2"/>
+    <text x="660" y="325" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Down)</text>
+    <line x1="490" y1="250" x2="690" y2="250" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="695" y="254" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (2 Low)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>The 2-2 Reversal represents an immediate structural failure of directional momentum. Unlike sequences containing an inside bar contraction, the 2-2 targets aggressive participants who expanded a trend during the previous candle, only to face an immediate, wholesale rejection.</p>
+        <ul>
+          <li><strong style="color:var(--accent2)">Bullish Entry:</strong> Stop-market buy 1 penny above the Wick High of the active 2-Down candle.</li>
+          <li><strong style="color:var(--danger)">Bearish Entry:</strong> Stop-market short 1 penny below the Wick Low of the active 2-Up candle.</li>
+          <li><strong style="color:var(--warning)">Stop:</strong> The opposite extreme wick tip of the breakout bar.</li>
+          <li><strong style="color:var(--accent)">Target:</strong> Full broadening formation completion across the preceding structural peaks.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">3-2-2</span>
+      <span class="tag danger">Deep Stop-Hunt Reversal</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-2 BULLISH REVERSAL</text>
+  <g>
+    <line x1="70" y1="100" x2="70" y2="240" stroke="var(--accent3)" stroke-width="3"/>
+    <rect x="55" y="120" width="30" height="100" fill="var(--accent3)" rx="2"/>
+    <text x="70" y="275" fill="var(--accent3)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+    <line x1="55" y1="100" x2="310" y2="100" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="140" y="92" fill="var(--accent)" font-size="9" font-family="DM Mono">MACRO TARGET (3 High)</text>
+  </g>
+  <g>
+    <line x1="170" y1="155" x2="170" y2="270" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="155" y="170" width="30" height="90" fill="var(--danger)" rx="2"/>
+    <text x="170" y="305" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Dn)</text>
+    <text x="170" y="285" fill="var(--danger)" font-size="9" font-family="DM Mono" text-anchor="middle">TRAPPED LOW</text>
+  </g>
+  <g>
+    <line x1="270" y1="90" x2="270" y2="220" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="255" y="110" width="30" height="100" fill="var(--accent)" rx="2"/>
+    <text x="270" y="275" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+    <line x1="140" y1="155" x2="300" y2="155" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="305" y="159" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (2 High)</text>
+  </g>
+  <text x="600" y="35" fill="var(--danger)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-2 BEARISH REVERSAL</text>
+  <g>
+    <line x1="470" y1="110" x2="470" y2="250" stroke="var(--accent3)" stroke-width="3"/>
+    <rect x="455" y="130" width="30" height="100" fill="var(--accent3)" rx="2"/>
+    <text x="470" y="285" fill="var(--accent3)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+    <line x1="455" y1="250" x2="710" y2="250" stroke="var(--danger)" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="540" y="264" fill="var(--danger)" font-size="9" font-family="DM Mono">MACRO TARGET (3 Low)</text>
+  </g>
+  <g>
+    <line x1="570" y1="80" x2="570" y2="195" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="555" y="95" width="30" height="90" fill="var(--accent)" rx="2"/>
+    <text x="570" y="225" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+    <text x="570" y="72" fill="var(--accent)" font-size="9" font-family="DM Mono" text-anchor="middle">TRAPPED HIGH</text>
+  </g>
+  <g>
+    <line x1="670" y1="130" x2="670" y2="270" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="655" y="140" width="30" height="115" fill="var(--danger)" rx="2"/>
+    <text x="670" y="305" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Dn)</text>
+    <line x1="540" y1="195" x2="700" y2="195" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="705" y="199" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (2 Low)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>A 3-2 Reversal operates via a deep stop-hunt engineered right outside an established mother range. Unlike the compressed 3-1-2 structure, the intermediate bar (Bar 2) must actively breach the absolute boundary of the previous Bar 3. This triggers breakout stops and draws in late retail momentum. When the breakout fails to sustain, the snap-back to break the opposite end of the Bar 2 range catches traders deeply off-sides.</p>
+        <ul>
+          <li><strong style="color:var(--accent2)">Bullish Reclaim Trigger:</strong> Execution at Bar 1 Wick High + $0.01.</li>
+          <li><strong style="color:var(--danger)">Bearish Reclaim Trigger:</strong> Fills 1 penny below the Bar 2-Up Low after it spikes past the Bar 3 high boundary.</li>
+          <li><strong style="color:var(--warning)">Invalidation:</strong> Anchored at the apex tip of the failed Bar 2 wick extension.</li>
+          <li><strong style="color:var(--accent3)">Macro Target:</strong> The complete structural high or low extreme of the master parent Bar 3 container.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Statistical Edge from specific patterns:</strong> Reversals that reclaim last week's lows have a <strong>52-60% win rate</strong> with winning trades roughly <strong>2x the size</strong> of losing trades. The biggest winners: two-two month reversals reclaiming last year's lows. The 3-2 setup works ~55% of the time but "goes insane" when it kicks in &mdash; with very small risk.
+  </div>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">3-1-2</span>
+      <span class="tag bull">Mother-Bar Breakout</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="400" y1="0" x2="400" y2="360" stroke-dasharray="4"/>
+    <line x1="0" y1="180" x2="800" y2="180" stroke-dasharray="4"/>
+  </g>
+  <text x="200" y="35" fill="var(--accent)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-1-2 BULLISH BREAKOUT</text>
+  <g>
+    <line x1="80" y1="80" x2="80" y2="260" stroke="var(--accent3)" stroke-width="3"/>
+    <rect x="65" y="110" width="30" height="120" fill="var(--accent3)" rx="2"/>
+    <text x="80" y="295" fill="var(--accent3)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+  </g>
+  <g>
+    <line x1="180" y1="130" x2="180" y2="210" stroke="var(--gold)" stroke-width="3"/>
+    <rect x="165" y="145" width="30" height="50" fill="var(--gold)" rx="2"/>
+    <text x="180" y="245" fill="var(--gold)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+  </g>
+  <g>
+    <line x1="280" y1="60" x2="280" y2="180" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="265" y="85" width="30" height="85" fill="var(--accent)" rx="2"/>
+    <text x="280" y="295" fill="var(--accent)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2</text>
+    <line x1="150" y1="130" x2="310" y2="130" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="315" y="134" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (1 High)</text>
+  </g>
+  <text x="600" y="35" fill="var(--danger)" font-size="16" font-weight="700" text-anchor="middle" letter-spacing="1">3-1-2 BEARISH BREAKOUT</text>
+  <g>
+    <line x1="480" y1="80" x2="480" y2="260" stroke="var(--accent3)" stroke-width="3"/>
+    <rect x="465" y="110" width="30" height="120" fill="var(--accent3)" rx="2"/>
+    <text x="480" y="295" fill="var(--accent3)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+  </g>
+  <g>
+    <line x1="580" y1="120" x2="580" y2="200" stroke="var(--gold)" stroke-width="3"/>
+    <rect x="565" y="135" width="30" height="50" fill="var(--gold)" rx="2"/>
+    <text x="580" y="245" fill="var(--gold)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+  </g>
+  <g>
+    <line x1="680" y1="140" x2="680" y2="280" stroke="var(--danger)" stroke-width="3"/>
+    <rect x="665" y="160" width="30" height="100" fill="var(--danger)" rx="2"/>
+    <text x="680" y="315" fill="var(--danger)" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2</text>
+    <line x1="550" y1="200" x2="710" y2="200" stroke="var(--accent2)" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="715" y="204" fill="var(--accent2)" font-size="10" font-family="DM Mono">TRIGGER (1 Low)</text>
+  </g>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics &amp; Context</h4>
+        <p>An aggressive structural pattern built around a foundational outside bar. A high-volatility outside candle (Bar 3) sets wide broadening formation limits, trapping participants on both sides. Price contracts into a tight inside candle (Bar 1), neutralizing momentum within the Mother Bar. The breakout triggers upon violation of the inside bar's parameter, scaling into a directional Bar 2 that targets the absolute outer pivots of the original Bar 3.</p>
+        <ul>
+          <li><strong style="color:var(--accent2)">Bullish Entry:</strong> Stop-market at Bar 1 Wick High + $0.01.</li>
+          <li><strong style="color:var(--danger)">Bearish Entry:</strong> Stop-market at Bar 1 Wick Low - $0.01.</li>
+          <li><strong style="color:var(--warning)">Nesting Rules:</strong> Bar 1 wicks must remain entirely within Bar 3, and the breakout bar's tail cannot break the opposite Bar 1 wick extreme.</li>
+          <li><strong style="color:var(--accent)">Target:</strong> The structural outer wick boundaries of the foundational Bar 3.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">3-2-1-2 Macro Sequence</span>
+      <span class="tag bull">Macro Breakout Blueprint</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <path d="M 60 140 L 740 30" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+  <path d="M 60 220 L 740 330" stroke="rgba(255,255,255,0.08)" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+  <g>
+    <line x1="150" y1="100" x2="150" y2="260" stroke="#ff6b35" stroke-width="3"/>
+    <rect x="135" y="120" width="30" height="110" fill="#ff6b35" rx="2"/>
+    <text x="150" y="295" fill="#ff6b35" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">3</text>
+    <text x="150" y="315" fill="#7a8490" font-size="11" text-anchor="middle">Outside Range</text>
+  </g>
+  <g>
+    <line x1="320" y1="130" x2="320" y2="240" stroke="#ff4d6d" stroke-width="3"/>
+    <rect x="305" y="145" width="30" height="80" fill="#ff4d6d" rx="2"/>
+    <text x="320" y="295" fill="#ff4d6d" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Down)</text>
+    <text x="320" y="315" fill="#7a8490" font-size="11" text-anchor="middle">Internal Move</text>
+  </g>
+  <g>
+    <line x1="490" y1="160" x2="490" y2="210" stroke="#f5c842" stroke-width="3"/>
+    <rect x="475" y="170" width="30" height="30" fill="#f5c842" rx="2"/>
+    <text x="490" y="295" fill="#f5c842" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">1</text>
+    <text x="490" y="315" fill="#7a8490" font-size="11" text-anchor="middle">Compression</text>
+    <line x1="460" y1="160" x2="620" y2="160" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="560" y="153" fill="#00b8ff" font-size="10" font-family="DM Mono" text-anchor="middle">5-MIN WICK HIGH TRIGGER</text>
+  </g>
+  <g>
+    <line x1="660" y1="55" x2="660" y2="190" stroke="#00e5a0" stroke-width="4"/>
+    <rect x="640" y="70" width="40" height="100" fill="#00e5a0" rx="2"/>
+    <text x="660" y="295" fill="#00e5a0" font-size="14" font-weight="700" font-family="DM Mono" text-anchor="middle">2 (Up)</text>
+    <text x="660" y="315" fill="#00e5a0" font-size="11" text-anchor="middle">Momentum Break</text>
+  </g>
+  <path d="M 180 175 Q 240 175 285 185" stroke="#00b8ff" stroke-width="1.5" fill="none" marker-end="url(#arrowA)"/>
+  <path d="M 350 185 Q 410 185 455 185" stroke="#00b8ff" stroke-width="1.5" fill="none" marker-end="url(#arrowA)"/>
+  <path d="M 520 175 Q 580 150 625 125" stroke="#00b8ff" stroke-width="1.5" fill="none" marker-end="url(#arrowA)"/>
+  <defs>
+    <marker id="arrowA" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#00b8ff"/>
+    </marker>
+  </defs>
+  <text x="30" y="35" fill="#00b8ff" font-size="12" font-family="DM Mono" font-weight="600">//TIMEFRAME FOCUS: 5-MINUTE MOMENTUM ENTRY ("FIVER")</text>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics</h4>
+        <p>A multi-stage macro pattern engineered to resolve long-term structural consolidation. The sequence begins with an expansion outside bar (3), shifts into a corrective directional bar (2), and packs tightly into an inside bar (1) consolidation. Energy uncoils violently via a definitive structural breakout (2) that clears multi-month or multi-week consolidation bands, prompting extensive automated institutional short covering and momentum chasing.</p>
+      </div>
+    </div>
+  </div>
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">"Triangle They Out" Liquidity Hunt</span>
+      <span class="tag danger">Algorithmic Stop-Run Reclaim</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 360" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <path d="M 180 160 L 700 40" stroke="rgba(255,255,255,0.06)" stroke-width="2" stroke-dasharray="4,4" fill="none" />
+  <path d="M 180 190 L 700 330" stroke="rgba(255,255,255,0.06)" stroke-width="2" stroke-dasharray="4,4" fill="none" />
+  <line x1="100" y1="240" x2="620" y2="240" stroke="#ff4d6d" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <text x="110" y="230" fill="#ff4d6d" font-size="11" font-family="DM Mono">Prior Week / Session Support Level</text>
+  <g>
+    <line x1="250" y1="120" x2="250" y2="240" stroke="#ff4d6d" stroke-width="3"/>
+    <rect x="235" y="140" width="30" height="95" fill="#ff4d6d" rx="2"/>
+  </g>
+  <g>
+    <line x1="420" y1="180" x2="420" y2="295" stroke="#ff4d6d" stroke-width="3"/>
+    <rect x="405" y="190" width="30" height="60" fill="#ff4d6d" rx="2"/>
+    <circle cx="420" cy="275" r="14" fill="none" stroke="#ffb347" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="442" y="280" fill="#ffb347" font-size="11" font-family="DM Mono" font-weight="500">Trapped Shorts / Swept Stops</text>
+  </g>
+  <g>
+    <line x1="590" y1="70" x2="590" y2="250" stroke="#00e5a0" stroke-width="4"/>
+    <rect x="572" y="90" width="36" height="145" fill="#00e5a0" rx="2"/>
+    <circle cx="590" cy="240" r="5" fill="#00b8ff"/>
+    <path d="M 640 220 L 602 236" stroke="#00b8ff" stroke-width="1.5" fill="none" stroke-dasharray="3,1"/>
+    <text x="646" y="224" fill="#00b8ff" font-size="12" font-family="DM Mono" font-weight="600">EXECUTE ENTRY HERE</text>
+    <text x="646" y="238" fill="#7a8490" font-size="11">(On Range Reclaim Print)</text>
+  </g>
+  <text x="605" y="60" fill="#00e5a0" font-size="11" font-family="DM Mono">Target: last pivot high</text>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Execution Mechanics</h4>
+        <p>An omnipresent market discovery pattern where high-frequency algorithms deliberately force price to register a brief, marginal lower low or marginal higher high just outside a highly visible chart boundary (such as the previous week's low or morning support). The broadening formation channels form a distinct megaphone shape and diverge outwards over time, never wedging toward each other.</p>
+        <p>Once retail protective stops are swept to engineer sell-side liquidity, price prints a sharp V-shaped reversal, aggressively reclaiming the original range baseline and leaving early breakout sellers trapped offsides.</p>
+        <p>Never chase the initial breakout flush. Wait for the structural reclaim of the baseline before deploying capital.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Hammer &amp; Shooter &mdash; Advanced Applications</h3>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label green">Momentum Hammer</div>
+      <h3>Continuation Entry &mdash; Not Just Reversal</h3>
+      <p>A hammer doesn't only signal a bottom reversal. Within an established uptrend, a corrective pullback that forms a hammer (long lower wick, closes near highs of that bar) is a <strong>continuation entry</strong>. The lower wick represents shorts getting stopped out and buyers defending the trend. Entry: the reclaim of the hammer bar's high. Stop: the low of the wick. It should go instantly &mdash; "if this daily buy order is still being put in and they're buying this month, they're buying this week, it should just go." If it doesn't go immediately, limit sell orders are sitting at high of day and you need a rebreak.</p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Time Frame Escalation</div>
+      <h3>Hammer 5 &rarr; 15 &rarr; 30 &rarr; 60</h3>
+      <p>When the same hammer wick structure appears sequentially across ascending time frames it signals escalating conviction. A hammer on the 5-min followed by a hammer on the 15-min means the buyer who defended the 5-min level is still defending it 15 minutes later. Hammer 15 &rarr; hammer 30 &rarr; hammer 60 tells you the buyer is present at every group level. The escalation is the signal to size up &mdash; each confirming time frame reduces the probability of a false reclaim.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Corrective 30 During 2-Up Day</div>
+      <h3>Intraday Hammer Entry</h3>
+      <p>When the day is 2-up (trending higher) and the 30-min goes corrective (red bar, forms a hammer), that is your intraday entry signal. The 30-min corrective bar is the "triangle they out" within the uptrend &mdash; stops out weak longs, then buyers reclaim. Entry: reclaim of the hammer bar's high on the 30-min. Stop: the low of that corrective bar, or ideally the open of that candle for a tighter entry. Add on the 60-min confirmation when that bar goes green.</p>
+    </div>
+    <div class="card">
+      <div class="card-label red">Shooter &mdash; Not Inherently Bearish</div>
+      <h3>Know the Context First</h3>
+      <p>A shooter (green bar closing near its lows) within an uptrend is profit taking, not a reversal signal &mdash; it's the mirror of the triangle they out. A shooter is not inherently bearish. A shooter only becomes a sell signal when: (1) FTFC is turning down, (2) it appears at the top of a broadening formation's exhaustion risk zone, or (3) it forms at the weekly/monthly open resistance level. A shooter into FTFC-up is just a pause &mdash; not a short.</p>
+    </div>
+  </div>
+
+  <div class="tactical-row">
+    <div class="tactical-meta">
+      <span class="tactical-title">Hammer Counter Shooter &amp; Shooter Counter Hammer</span>
+      <span class="tag bull">Momentum Continuation Setup</span>
+    </div>
+    <div class="tactical-body">
+      <div class="tactical-img-container">
+<svg viewBox="0 0 800 400" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0b0e11; font-family:'DM Sans', sans-serif;">
+  <line x1="400" y1="20" x2="400" y2="390" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="200" y="28" fill="#00e5a0" font-size="13" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="0.5">HAMMER COUNTER SHOOTER</text>
+  <text x="200" y="42" fill="#7a8490" font-size="10" text-anchor="middle" font-family="DM Mono">BULLISH CONTINUATION</text>
+  <line x1="100" y1="90" x2="100" y2="290" stroke="#00e5a0" stroke-width="2"/>
+  <rect x="86" y="240" width="28" height="30" fill="#00e5a0" rx="2"/>
+  <text x="100" y="312" fill="#00e5a0" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 1</text>
+  <text x="100" y="325" fill="#00e5a0" font-size="10" font-family="DM Mono" text-anchor="middle">SHOOTER</text>
+  <text x="100" y="337" fill="#7a8490" font-size="9" font-family="DM Mono" text-anchor="middle">(gap up, fades)</text>
+  <line x1="200" y1="200" x2="200" y2="330" stroke="#ff4d6d" stroke-width="2"/>
+  <rect x="186" y="205" width="28" height="40" fill="#ff4d6d" rx="2"/>
+  <text x="200" y="352" fill="#ff4d6d" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 2</text>
+  <text x="200" y="365" fill="#ff4d6d" font-size="10" font-family="DM Mono" text-anchor="middle">HAMMER</text>
+  <text x="200" y="377" fill="#7a8490" font-size="9" font-family="DM Mono" text-anchor="middle">(buyers defend)</text>
+  <line x1="300" y1="130" x2="300" y2="220" stroke="#00e5a0" stroke-width="3"/>
+  <rect x="286" y="135" width="28" height="75" fill="#00e5a0" rx="2"/>
+  <text x="300" y="312" fill="#00e5a0" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 3</text>
+  <text x="300" y="325" fill="#00e5a0" font-size="10" font-family="DM Mono" text-anchor="middle">2-UP TRIGGER</text>
+  <line x1="72" y1="205" x2="340" y2="205" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="74" y="198" fill="#00b8ff" font-size="9" font-family="DM Mono">ENTRY - reclaim hammer high</text>
+  <line x1="165" y1="330" x2="340" y2="330" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="167" y="343" fill="#ffb347" font-size="9" font-family="DM Mono">STOP - hammer wick low</text>
+  <circle cx="286" cy="205" r="5" fill="#00b8ff"/>
+  <text x="600" y="28" fill="#ff4d6d" font-size="13" font-weight="700" text-anchor="middle" font-family="DM Mono" letter-spacing="0.5">SHOOTER COUNTER HAMMER</text>
+  <text x="600" y="42" fill="#7a8490" font-size="10" text-anchor="middle" font-family="DM Mono">BEARISH CONTINUATION</text>
+  <line x1="490" y1="150" x2="490" y2="310" stroke="#ff4d6d" stroke-width="2"/>
+  <rect x="476" y="155" width="28" height="35" fill="#ff4d6d" rx="2"/>
+  <text x="490" y="332" fill="#ff4d6d" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 1</text>
+  <text x="490" y="345" fill="#ff4d6d" font-size="10" font-family="DM Mono" text-anchor="middle">HAMMER</text>
+  <text x="490" y="357" fill="#7a8490" font-size="9" font-family="DM Mono" text-anchor="middle">(brief bounce)</text>
+  <line x1="590" y1="120" x2="590" y2="230" stroke="#00e5a0" stroke-width="2"/>
+  <rect x="576" y="195" width="28" height="35" fill="#00e5a0" rx="2"/>
+  <text x="590" y="332" fill="#00e5a0" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 2</text>
+  <text x="590" y="345" fill="#00e5a0" font-size="10" font-family="DM Mono" text-anchor="middle">SHOOTER</text>
+  <text x="590" y="357" fill="#7a8490" font-size="9" font-family="DM Mono" text-anchor="middle">(seller reclaims)</text>
+  <line x1="700" y1="185" x2="700" y2="340" stroke="#ff4d6d" stroke-width="3"/>
+  <rect x="686" y="195" width="28" height="130" fill="#ff4d6d" rx="2"/>
+  <text x="700" y="362" fill="#ff4d6d" font-size="11" font-weight="700" font-family="DM Mono" text-anchor="middle">BAR 3</text>
+  <text x="700" y="375" fill="#ff4d6d" font-size="10" font-family="DM Mono" text-anchor="middle">2-DOWN TRIGGER</text>
+  <line x1="460" y1="230" x2="740" y2="230" stroke="#00b8ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="462" y="223" fill="#00b8ff" font-size="9" font-family="DM Mono">ENTRY - break of shooter low</text>
+  <line x1="460" y1="120" x2="660" y2="120" stroke="#ffb347" stroke-width="1.2" stroke-dasharray="3,3"/>
+  <text x="462" y="113" fill="#ffb347" font-size="9" font-family="DM Mono">STOP - shooter wick high</text>
+  <circle cx="686" cy="230" r="5" fill="#00b8ff"/>
+</svg>
+      </div>
+      <div class="tactical-info">
+        <h4>Hammer Counter Shooter &mdash; Bullish</h4>
+        <p><strong>Setup:</strong> Asset gaps up or thrusts into new highs (Bar 1 = Shooter, green bar closing near its lows). Shorts pile in expecting the move to fail. Bar 2 forms a Hammer &mdash; a red bar with a long lower wick showing buyers stepping in to defend, closing well above the bar's lows. The lower wick is trapped shorts getting stopped out.</p>
+        <p><strong>Entry:</strong> The moment Bar 3 reclaims Bar 2's high by one cent. Stop: the low of the Hammer's wick. The trade should go instantly &mdash; if buyers were serious enough to form the hammer, the reclaim should be immediate. If it stalls at high of day, limit sellers are sitting there; wait for a rebreak.</p>
+        <h4 style="margin-top:14px;">Shooter Counter Hammer &mdash; Bearish</h4>
+        <p><strong>Setup:</strong> The mirror. Asset in a downtrend bounces briefly (Bar 1 = Hammer, red bar with lower wick, looks like a reversal). Bulls get excited. Bar 2 = Shooter &mdash; green bar that fades and closes near its lows, confirming sellers are still in control. The upper wick of the shooter is trapped longs getting stopped out.</p>
+        <p><strong>Entry:</strong> Bar 3 breaks below Bar 2's low by one cent. Stop: the high of the Shooter's wick. Works best when the weekly or monthly is already in downward continuity &mdash; the hammer was never a real reversal, just a liquidity grab before continuation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section" id="analysis">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Market Analysis Framework</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <h3 class="sub-title">Pre-Market Checklist</h3>
+  <ul class="rules-list">
+    <li><span class="icon info">1</span> Check index positions: SPY, QQQ, IWM, Dow Jones &mdash; are they above or below key levels (monthly open, weekly open, prior week's lows/highs)?</li>
+    <li><span class="icon info">2</span> Identify gappers &mdash; what's gapping up, what's gapping down? Do gaps create outside weeks or outside months on any name?</li>
+    <li><span class="icon info">3</span> Check which sectors are gapping with the market vs. diverging (e.g., China names gapping down while market gaps up = note divergence).</li>
+    <li><span class="icon info">4</span> Look for "who's not going up when the market gaps up" &mdash; those are potential shorts. "Who's not going down when the market gaps down" &mdash; those are relative strength longs.</li>
+    <li><span class="icon info">5</span> Check the VIX and UVXY. If VIX is going down (sellers of VIX), algorithms are buying indexes. If UVXY is 2-2-2-60 down, they're not scared.</li>
+    <li><span class="icon info">6</span> Scan for simultaneous setups: multiple names in the same sector all triggering the same signal = institutional involvement.</li>
+  </ul>
+
+  <h3 class="sub-title">Intraday Market Reading Process</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label blue">First 15 Minutes</div>
+      <h3>Opening Range</h3>
+      <p>The first 15-min bar = the "morning range." All subsequent bars inside this = mother bar. The first 60-min bar = the daily group's direction. Don't chase the open &mdash; let the range establish. Identify if indexes are strong, weak, or diverging from each other.</p>
+    </div>
+    <div class="card">
+      <div class="card-label green">Second 30-Min</div>
+      <h3>Early Confirmation</h3>
+      <p>When the second 30-min bar opens, you have your first "flip." Are they confirming the opening direction? "Triangle they out" often happens here &mdash; taking out morning long stops. Then watch for reclaim signal. If the 30 goes down but doesn't reverse the 60, it's just triangle they out.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">The Flip (Top of Hour)</div>
+      <h3>60-Min Algorithm Reset</h3>
+      <p>Every 60 minutes, algorithms reset. The SECOND 60-min bar is when you learn what the 60-min group is doing separate from the daily group. "Mind the flip" = watch whether they buy or sell on the new 60-min open. If they go inside 60 (1), consolidation. If green = FTFC loading.</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Sector Rotation Scan</div>
+      <h3>What's Buying / Selling</h3>
+      <p>Scan all sector ETFs: XLK, SMH, XLF, XLU, XLE, XOP, XLI, XLB, XLV, XLRE, XLP, XLC. Count how many are "2 up" vs "2 down" vs "inside." Majority 2-down = market wants to go down. Majority inside = consolidation, awaiting catalyst. Tech + semis 2-up + index inside = buy tech.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Evidence Stacking Methodology</h3>
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-val">1</div><div class="stat-key">Time frame = weak evidence</div></div>
+    <div class="stat-box"><div class="stat-val blue">3</div><div class="stat-key">Time frames = solid evidence</div></div>
+    <div class="stat-box"><div class="stat-val gold">5+</div><div class="stat-key">All aligning = high conviction</div></div>
+    <div class="stat-box"><div class="stat-val orange">&#9889;</div><div class="stat-key">Simultaneous sector = institutional</div></div>
+  </div>
+
+  <div class="callout warn">
+    <strong>The Open Is Everything:</strong> "The open is what matters, not the close." If Monday closes terrible but Tuesday opens green above the weekly open &mdash; that green open changes everything. The second anything opens green above its key level (monthly, weekly open), the buyer has arrived. A prior close below doesn't matter once a new bar opens above key level.
+  </div>
+
+  <h3 class="sub-title">Correlated Asset Analysis</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>QQQ leads SPY</strong> because it's pure tech/semi. SPY is dragged by financials, utilities, staples, real estate &mdash; sectors that may not be moving. When Q's are strong and SPY is flat, trade Q's or the specific semis/tech names.</li>
+    <li><span class="icon info">i</span> <strong>Semis (SMH) must confirm tech (XLK).</strong> If semis are strong but tech is not &mdash; look at semi names (QCOM, MU, AMD). If tech breaks first, semis follow. If semis lead, tech follows soon after.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>UVXY/VIX going down = market going up.</strong> They sell the VIX when they're not scared. Rob Smith (creator of The Strat) primarily shorted UVXY &mdash; it always goes to zero long-term. Only get out of UVXY short when indexes go FTFC down or UVXY breaks above weekly/monthly open.</li>
+    <li><span class="icon warn">!</span> <strong>Index divergence = trade the stronger one.</strong> If IWM is going outside week while SPY is inside, buy IWM. The leader shows institutional aggression first. The followers confirm later.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Gold miners leading down = market weakness signal.</strong> GDX / GDXJ going 2-2 day down while indexes are inside = watch for continuation to downside in broad market.</li>
+  </ul>
+</section>
+<section class="section" id="options-buying">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">Options Buying &mdash; Core Principles</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="quote">
+    Every trade is one of five outcomes: <strong>big win, small win, scratch, small loss, big loss.</strong> The goal is simple: <em>eliminate the big loss.</em> Once you remove the big loss from your repertoire, everything else becomes a refinement &mdash; letting winners run bigger, cutting small losses quicker, turning scratches into small wins. The stops are what make this possible. If you get rid of that big loss and you can survive, you learn all the other skills.
+  </div>
+
+  <h3 class="sub-title">When to Buy Options</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Buy when price is at or near a key level of reclaim</strong> &mdash; not when it's already ripping through. The best entry is the "triangle they out" &mdash; slight lower low then reversal, before the big move.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Buy the inside bar setup into continuity</strong> &mdash; when an inside bar breaks then buy in the direction of FTFC (when month/week/day are all aligned).</li>
+    <li><span class="icon info">i</span> <strong>Match option expiration to time frame of the signal.</strong> 60-min signal = today's or tomorrow's expiration. Daily signal = this week's or next week's. Weekly signal = 2-4 weeks out. Monthly signal = 30-60 days out.</li>
+    <li><span class="icon warn">!</span> <strong>Premium discipline:</strong> If premium is too high relative to the signal, skip it or reduce size. Over-paying kills the trade even when you're right on direction.</li>
+    <li><span class="icon info">i</span> <strong>Use the broadening formation as the target</strong> &mdash; know before you buy what the expected move is. If a 15-min signal only has a $0.14 target but the daily signal has a $15 target, consider using the daily signal's option.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Don't buy options INTO a simultaneous inside bar.</strong> When a large number of names are inside bar, the market is undecided. Wait for the resolution before buying.</li>
+  </ul>
+
+  <h3 class="sub-title">Strike Selection Logic</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label blue">Intraday (60-min/30-min setup)</div>
+      <h3>Slightly Out Of The Money (OTM)</h3>
+      <p>Pick the strike right outside the current price that aligns with the immediate 15/30-min broadening formation target. Delta should be 0.35 to 0.45. High gamma exposure means fast scaling as it reclaims pivots.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Swing Play (Weekly Reversal)</div>
+      <h3>At The Money (ATM) / In The Money (ITM)</h3>
+      <p>When playing a weekly 2-2 reversal, buy ATM or slightly ITM options (Delta 0.50+). This protects you against theta decay if the market chops inside a daily mother bar before expanding toward the outside week magnitude target.</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Macro Move (Monthly/Quarterly)</div>
+      <h3>Leaps / Far Out Expirations</h3>
+      <p>For structural multi-month broadening formation plays, pick strikes at key institutional target magnets. Give yourself 60-90 days minimum. Allows you to sit through lower timeframe 60-min flips without panic.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="intraday">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <h2 class="section-title">Intraday Framework</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <h3 class="sub-title">Intraday Options Framework</h3>
+  <div class="options-grid">
+    <div class="opt-card intra">
+      <div class="opt-meta intra">time frame: 15-60 min</div>
+      <h4>The 60-Min Reversal Play</h4>
+      <ul>
+        <li>Wait for the second 60-min bar (the "flip")</li>
+        <li>Look for inside 60 &mdash; breaks in direction of FTFC</li>
+        <li>This is when the 60-min group shows up to confirm or negate</li>
+        <li>Buy calls/puts when the 15-min confirms the 60-min direction</li>
+        <li>Stop: below the 60-min open price</li>
+      </ul>
+    </div>
+    <div class="opt-card intra">
+      <div class="opt-meta intra">time frame: 5-15 min</div>
+      <h4>Triangle They Out Entry</h4>
+      <ul>
+        <li>Price makes slight lower low during uptrend (or higher high in downtrend)</li>
+        <li>This stops out the morning buyers/sellers</li>
+        <li>Buy the reclaim of the morning open / 15-min level</li>
+        <li>This is the "inside bar / lower low then buy the break up"</li>
+        <li>Works best when FTFC is intact</li>
+      </ul>
+    </div>
+    <div class="opt-card intra">
+      <div class="opt-meta intra">time frame: 5-30 min</div>
+      <h4>Simultaneous Break Entry</h4>
+      <ul>
+        <li>Watch for 2+ correlated names breaking same signal at same time</li>
+        <li>E.g., QQQ + SMH + XLK all break 15-min 2 up simultaneously</li>
+        <li>Widest stops allowed (more evidence = more room)</li>
+        <li>Add to position as each subsequent bar confirms</li>
+        <li>"The most powerful intraday signal" per session</li>
+      </ul>
+    </div>
+    <div class="opt-card intra">
+      <div class="opt-meta intra">sector play</div>
+      <h4>Relative Strength Trade</h4>
+      <ul>
+        <li>Market goes down &mdash; find what is NOT going down</li>
+        <li>That outperformer is accumulating</li>
+        <li>When market recovers, those names fly first and fastest</li>
+        <li>Example: semis held while SPY made lower lows &mdash; buy semis on market recovery</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Intraday Stop Logic</h3>
+  <div class="concept">
+    <div class="concept-term">Tight Stop (Default)</div>
+    <div class="concept-def">For 15-min or 5-min signals: stop is the <strong>second price returns below that bar's level</strong>. For a 3-1-2 setup: stop is below/above the break of the inside bar that follows the outside bar. If it doesn't go instantaneously, you are at risk of broadening back against you.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Wider Stop</div>
+    <div class="concept-def">When you have a <strong>simultaneous break with high evidence</strong> (FTFC + sector confirmation), you can give more room. Walk stops up to the prior 15-min bar's low as you go &mdash; "walking your stops up" as each bar holds. Don't widen stops just because you feel like it.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Trail on Runners</div>
+    <div class="concept-def">After initial target hit (broadening formation), reduce position, hold a runner, trail stop to the 30-min open. "When you hit the target, initial profit taking can be expected." If it doesn't reverse and the 30 is still green &mdash; hold. "Two, two, two &mdash; hold, hold, hold &mdash; didn't tell you to get out yet."</div>
+  </div>
+
+  <div class="callout warn">
+    <strong>Intraday Options Premium Decay Warning:</strong> "When they rip 2% really fast, when it drops like this, now you're down half of your gains just because of the way that works." For intraday options, take profits into momentum &mdash; don't wait for the "perfect" exit. The option premium erodes faster than the stock price on pullbacks.
+  </div>
+</section>
+<section class="section" id="swing">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <h2 class="section-title">Swing Options Trading</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout info">
+    <strong>Definition:</strong> Swing options = 1-5 day holds (weekly expiration options). Target: weekly signals creating outside weeks. Best entries are at the START of the week or mid-week reversal signals.
+  </div>
+
+  <h3 class="sub-title">Swing Setup Criteria</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Monthly buyer + weekly signal = swing long.</strong> If the month is green and the week sets up a 2-2 or 3-2 reversal on a name, that's a swing setup. Hold until weekly target is hit or week reverses.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Inside week = premium seller's dream, buyer's setup.</strong> An inside week means the algorithm is consolidating. When it breaks, it creates the outside week &mdash; big move. Buy calls/puts just before the inside week resolves. Stop: inside bar doesn't break your direction.</li>
+    <li><span class="icon info">i</span> <strong>"Two going three week"</strong> = the week is 2 up and trying to become an outside week (3). This is a swing buy signal on individual names.</li>
+    <li><span class="icon warn">!</span> <strong>Wednesday reversals set the tone for the rest of the week.</strong> "Simultaneous 2-2 on Wednesday" = institutional buyer arrived mid-week. This sets up outside week targets. Best swing entries are Wednesday afternoon into a 2-2 reversal that aligns with monthly continuity.</li>
+    <li><span class="icon info">i</span> <strong>Reclaiming last week's lows</strong> with a 2-2 reversal = 52-60% win, 2:1 R/R. This is the core swing trade. Use weekly options expiring the following Friday. Look for FTFC confirmation on the daily and 60.</li>
+  </ul>
+
+  <h3 class="sub-title">Weekly Option Strike Selection</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label purple">Early Week Entry</div>
+      <h3>Monday / Tuesday Setup</h3>
+      <p>When monthly is green and week opens above monthly open: buy ATM calls expiring Friday. The weekly target is outside week (take out prior week's high). Stop: week closes below its open.</p>
+    </div>
+    <div class="card">
+      <div class="card-label green">Mid-Week Reversal</div>
+      <h3>Wednesday 2-2 Reversal</h3>
+      <p>Wednesday reversal signals are statistically significant &mdash; they often set the tone for Thursday and Friday. Buy calls (or puts) on Wednesday after the 2-2 reversal confirms on the 60-min. Use current week expiration if 2+ days left; next week if only 1 day left.</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Sector Leader Setup</div>
+      <h3>Inside Week &mdash; Break</h3>
+      <p>When a sector ETF (TAN, SMH, XLK) is inside week, find the strongest individual names. When the ETF breaks the inside week, those individual names move faster. Buy 1 week out options on the ETF or the leading name. Target: prior week's high or the broadening formation above.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Overnight / Multi-Day Holding Logic</h3>
+  <ul class="rules-list">
+    <li><span class="icon info">i</span> For overnight holds: only the <strong>weekly, monthly, quarterly, and yearly</strong> signals remain "in force" overnight. Daily and 60-min reset. Only hold overnight if the weekly is clearly green/red in your direction.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Reduce gap risk</strong> by having multiple correlated assets confirm (simultaneous break). Single-stock overnight positions have higher gap risk than index ETFs.</li>
+    <li><span class="icon bull">&#10003;</span> If you have a winner going into overnight &mdash; take partial profits to reduce risk on the gap. Hold a runner with the weekly signal as your backstop.</li>
+    <li><span class="icon warn">!</span> <strong>"Grinder" stocks</strong> that accumulate slowly during the day may gap up the next morning. Inside bar all day &mdash; gap up is common. If you spot accumulation (walking bids up slowly), overnight hold with weekly/monthly support is justified.</li>
+    <li><span class="icon bear">&#10007;</span> Never hold overnight a stock that is on a "two down day" &mdash; the seller is still present. Wait for a signal change to 2-up before holding.</li>
+  </ul>
+</section>
+
+<section class="section" id="longterm">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <h2 class="section-title">Long-Term Options Trading</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <h3 class="sub-title">Long-Term (Quarterly / Monthly) Signal Framework</h3>
+  <div class="options-grid">
+    <div class="opt-card long">
+      <div class="opt-meta long">hold: 30-90 days</div>
+      <h4>Monthly Signal Entry</h4>
+      <ul>
+        <li>Month opens green above monthly open price</li>
+        <li>Buy near the beginning of the month for max time</li>
+        <li>Target: prior month's high or broadening formation</li>
+        <li>Stop: exit on daily close below monthly open (monthly reversal)</li>
+        <li>Use 45-60 DTE options at ATM or 1 strike OTM</li>
+      </ul>
+    </div>
+    <div class="opt-card long">
+      <div class="opt-meta long">hold: 60-180 days</div>
+      <h4>Quarterly Signal Entry</h4>
+      <ul>
+        <li>Quarterly open creates a 2-2 reversal (green quarter after red or vice versa)</li>
+        <li>If that week works you can potentially hold it for three months</li>
+        <li>Use 90+ DTE ATM or deep ITM options</li>
+        <li>Stop: quarter turns red (closes below quarterly open) or vice versa</li>
+      </ul>
+    </div>
+    <div class="opt-card long">
+      <div class="opt-meta long">hold: 3-12 months</div>
+      <h4>The Buy List Method</h4>
+      <ul>
+        <li>Monthly buy list: names above their monthly open</li>
+        <li>Only buy on triangle they out (lower low during month)</li>
+        <li>Stop: if it goes below monthly open price then exit</li>
+        <li>Target: reclaim prior month's highs + continue</li>
+      </ul>
+    </div>
+    <div class="opt-card long">
+      <div class="opt-meta long">conviction play</div>
+      <h4>Fulltime Frame Continuity LEAPS</h4>
+      <ul>
+        <li>Month, week, day, 60 all green = buy LEAPS</li>
+        <li>Position for the outside month / outside quarter target</li>
+        <li>Add to position on each new weekly confirmation</li>
+        <li>Stop: exit on FTFC breaking down OR monthly reversal</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Monthly Buy / Sell List Logic</h3>
+  <div class="callout">
+    <strong>Monthly Buy / Sell List:</strong> If a name is above its monthly open = on the buy list. If below = on the sell list. The "2-2 month" signal (two down/two up months then reversal) is a powerful long-term entry.
+  </div>
+
+  <h3 class="sub-title">Long-Term Option Characteristics</h3>
+  <div class="concept">
+    <div class="concept-term">Time Value / DTE</div>
+    <div class="concept-def">For monthly signals: <strong>45-60 DTE</strong> to allow the trade to work without excessive theta decay. For quarterly: <strong>90-120 DTE</strong>. For FTFC plays: LEAPS (180-365 DTE). The further out the signal, the more time you need in the option. Never buy <em>weekly</em> options for a <em>monthly</em> signal.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Adding to Positions</div>
+    <div class="concept-def">Start small &mdash; enter when the <strong>weekly signal first confirms</strong> the monthly direction. Add when the <strong>next week opens green</strong> above the prior week's open. Add again when you have a <strong>daily signal aligning</strong> mid-week. "Take a small position and then add to it if it starts working."</div>
+  </div>
+
+  <div class="callout info">
+    <strong>UVXY as Long-Term Trade:</strong> Rob Smith (creator of The Strat) primarily shorted the UVXY &mdash; it always goes to zero (reverse-split repeatedly). The strategy: stay short as long as indexes are FTFC up. Exit when: (1) indexes go FTFC down, or (2) UVXY breaks above its weekly or monthly open. Indexes can stay FTFC up for 12+ months, making this a perpetual long-term income trade.
+  </div>
+</section>
+<section class="section" id="zerod">
+  <div class="section-header">
+    <span class="section-num">09</span>
+    <h2 class="section-title">Zero DTE Options Strategy</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout danger">
+    <strong>Zero DTE Warning:</strong> Zero-DTE options amplify both gains and losses. A 2% move can take options from +70% to breakeven or worse on a pullback. Require tighter management and more aggressive profit-taking than longer-dated options.
+  </div>
+
+  <h3 class="sub-title">Zero DTE Rules from Sessions</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Reduce into the highs</strong> &mdash; when price blasts to a new high day and then opens the next bar, either sell right as it's going into the highs OR right when that bar opens one tick red.</li>
+    <li><span class="icon info">i</span> <strong>Best setups:</strong> The 15-min or 5-min triangle day out that creates a 60-min reversal near the end of the day.</li>
+    <li><span class="icon info">i</span> <strong>Strike selection:</strong> Buy ATM or 1 strike OTM zero-DTE. Don't go deep OTM &mdash; not enough time.</li>
+    <li><span class="icon warn">!</span> <strong>Walk stops more aggressively.</strong> Move stops up rapidly as each bar closes in your favor.</li>
+    <li><span class="icon warn">!</span> <strong>Don't hold zero DTE into inside bars.</strong> If price goes inside on the 15-min at the highs after a run, that's your signal to take profits. The inside bar could resolve against you with no time left.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Avoid buying zero DTE when lots of names are inside bar</strong> &mdash; the market is in equilibrium. Either nothing happens or a violent directional break occurs. Too binary for premium-paying options.</li>
+  </ul>
+
+  <h3 class="sub-title">Intraday Timing for Zero DTE</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label blue">Morning (9:30-10:30)</div>
+      <h3>Opening Range Setup</h3>
+      <p>Best for 0-DTE when the open creates a clear outside bar gap. Sell into the first big thrust &mdash; don't hold. If it goes inside on the 15-min after first thrust, take profits. The first hour is the daily group; zero DTE is a daily group trade.</p>
+    </div>
+    <div class="card">
+      <div class="card-label green">Midday (11-1pm)</div>
+      <h3>Mostly Avoid</h3>
+      <p>"Second and third hours stuck in morning range" = the worst zero DTE environment. Inside bars, low volume, choppy. Unless there's a specific catalyst (Fed speaker, news), avoid buying zero DTE during the lunch hour consolidation. Wait for afternoon setup.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Afternoon (2-4pm)</div>
+      <h3>The Closing Drive</h3>
+      <p>The 2:00-3:00 flip is where late zero-DTE setups emerge. "Inside 60 &mdash; triangle &mdash; 15-min break = last hour acceleration." If the 3pm 60-min bar opens and breaks out of the morning range, zero-DTE into the 4pm close is valid. Use tight stops given time left.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="universes">
+  <div class="section-header">
+    <span class="section-num">10</span>
+    <h2 class="section-title">The Universe Framework</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="callout info">
+    <strong>What is a Universe?</strong> A universe is the specific setup you're trading. Beginners fail by trying to trade every setup simultaneously. Instead, pick one universe, master it, then layer in the next. Each universe has its own rules, time frames, and entry criteria. They all use the same Strat language &mdash; just applied at different scopes.
+  </div>
+
+  <h3 class="sub-title">Universe 1 &mdash; The Gapper List</h3>
+  <div class="callout">
+    <strong>Start here. This is the foundational universe.</strong> The Gap List is posted daily. Two setups only: <strong>gap up / sell</strong> and <strong>gap down / buy</strong>. Use 30-min and 60-min signals only &mdash; nothing lower.
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label red">Gap Up / Sell</div>
+      <h3>Short the Failed Gap</h3>
+      <p>Gap up creates an immediate 2-up or outside bar. Wait for the first 30-min to either go bright red OR form a shooter/inside bar (both signal sellers). Then look for 2-down on the 30 or 60. Stop goes above high of day. Target: outside day/week below. <em>Never short into new lows &mdash; wait for the corrective rip first, then short the lower high.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-label green">Gap Down / Buy</div>
+      <h3>Buy the Failed Breakdown</h3>
+      <p>Gap down creates a 2-down or outside bar. Wait for a corrective bounce first &mdash; it must go green/red before buying. Look for 3-1-2 or inside 30 up. Stop below low of day. Target: outside day/week above. The same rule applies in reverse: <em>never buy into new lows, buy the first lower high that reclaims the gap.</em></p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Gap Up / Buy (Advanced)</div>
+      <h3>Continuation Gap &mdash; Corrective First</h3>
+      <p>Riskier. Only valid when monthly and weekly are aligned green (FTFC). Must see the first 15-min or 30-min go red first (corrective activity). Then buy the red-to-green reversal. Stop at low of the corrective bar. This is higher risk &mdash; only attempt after mastering gap up/sell and gap down/buy.</p>
+    </div>
+  </div>
+  <ul class="rules-list">
+    <li><span class="icon info">i</span> <strong>Gapper hold logic:</strong> Once in a gap trade, each subsequent day that opens in force (same direction) confirms the trade. A 2-up-2-down day mid-week = reconfirmation entry on the short side. You can hold the gapper universe trade all week if daily bars keep confirming.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Gapper + weekly signal combo:</strong> If the gap creates an outside week, or the name is "two going three" on the week, you have a weekly signal layered on the gapper entry. Hold it through the week to weekly magnitude, not just the daily target.</li>
+    <li><span class="icon warn">!</span> <strong>Inside 30 is an actionable signal on the gap list.</strong> An inside 30 that breaks in the gap's expected direction = entry. An inside 30 that breaks against the gap = get out, re-evaluate.</li>
+  </ul>
+
+  <h3 class="sub-title">Universe 2 &mdash; Daily Actionable Signals</h3>
+  <div class="concept">
+    <div class="concept-term">What Changes Daily</div>
+    <div class="concept-def">Your scanning list changes every day. What you're looking for: <strong>simultaneous breaks &mdash; ideally sector-specific</strong>, or same setups across the whole market (common during high-vol events like CPI, Fed days). When tech sector stocks all break their inside weeks up simultaneously = sector simultaneous break. These are the cleanest daily signals.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Daily Entry Timing</div>
+    <div class="concept-def"><strong>You don't have to be first.</strong> When the initial break occurs in the first 60-min, it's often choppy/whippy. Instead, wait for the reconfirming inside bar after the initial break. Example: stock breaks above prior high, then forms an inside bar above it. <em>That inside bar breaking up</em> is your entry &mdash; the stop is tighter, the setup is confirmed, and the evidence is higher. "You don't have to buy the initial break."</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Intraday Bright Green / Red Scan</div>
+    <div class="concept-def">Around 10:30-11:30, scan for what is <strong>bright green on the day AND the 60-min came back for a second serving</strong> (two up &mdash; inside up or two up &mdash; two up again). That stock is being actively accumulated intraday. Once the 60-min confirms they came back to buy more, you have an intraday position with the daily trend. Look for inside 30 or inside 60 breaks to get in.</div>
+  </div>
+
+  <h3 class="sub-title">Universe 3 &mdash; Weekly Signals</h3>
+  <div class="callout">
+    <strong>The weekly universe is your weekend scan.</strong> Identify simultaneous sector breaks setting up on the weekly time frame. You have all five days of the week to work the trade &mdash; every daily bar either confirms or negates what you identified over the weekend.
+  </div>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Let them go green first, then confirm.</strong> On Monday, the weekly open and daily open are coupled &mdash; you have less information. On Tuesday, the daily decouples from the weekly. A bright green Tuesday (2-up day) is when you get your first real confirmation. "They bought Monday, Tuesday &mdash; how are you turning that around?"</li>
+    <li><span class="icon info">i</span> <strong>Relative strength is the key filter.</strong> If semis are rallying and LRCX went 3 (outside bar) while TSM held 2-up (never went 3), TSM is relatively stronger. Buy the one that didn't show weakness. The stronger name will run faster when the sector firms up.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Walk stops weekly.</strong> Start with stop at the weekly open. Once Monday confirms, move stop to Monday's low. Once Tuesday confirms, move stop to Tuesday's low. Continue bumping through the week. Never widen stops &mdash; only tighten.</li>
+    <li><span class="icon warn">!</span> <strong>Three is weak, two is strong.</strong> In a weekly rally, if a name goes "three" (outside bar) on any given day &mdash; it's showing buyer/seller conflict. The stronger names stay "two up" the whole week. Prefer the names that never went three during the weekly move.</li>
+    <li><span class="icon info">i</span> <strong>Gap up sells within the weekly universe:</strong> A gap up mid-week on a name you're long = use what you know from the gapper universe. A gap up that goes red first (corrective) then reverses green = stay long, the week is confirming. A gap up that goes three (outside bar) mid-week = take partials, it's showing exhaustion risk.</li>
+  </ul>
+  <h3 class="sub-title">Universe 4 &mdash; Macro (Quarterly / Yearly Signals)</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label gold">Quarterly Signal</div>
+      <h3>3-Month Hold Framework</h3>
+      <p>When a quarterly open creates a 22 reversal (green quarter after red, or vice versa), you potentially have a 3-month trade. Entry: daily or weekly signal confirming the quarterly direction. Stop: quarter closes below its open. Target: outside quarter (prior quarter's high/low).</p>
+    </div>
+    <div class="card">
+      <div class="card-label orange">Yearly Signal</div>
+      <h3>Annual Trend Trade</h3>
+      <p>Yearly 22 reversal or 312 = potential full-year trend. Use the quarterly and monthly confirmations to add. The yearly signal stays in force until you close below/above the yearly open. Most retail traders miss these entirely &mdash; they're the highest-evidence trades with the most time to work. Use a scanner to find yearly 22 signals at the start of each year.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Macro Reconfirmation</div>
+      <h3>Confirm or Negate Weekly</h3>
+      <p>Each week within a quarterly/yearly trade either confirms or negates. When it confirms: add. When it negates (2-down week): reduce but don't necessarily exit &mdash; wait to see if the monthly open holds. When the monthly open breaks in the wrong direction: exit. The macro trader ignores daily noise and focuses on whether the weekly keeps confirming the quarterly/yearly direction.</p>
+    </div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Strat Bot / Scanner Use</div>
+    <div class="concept-def">For macro trades: filter by quarterly or yearly signals in force. Sort by highest percentage gain &mdash; those are the ones with the most momentum behind them. Then filter by sector (e.g., tech) and look for inside weeks or actionable daily signals to enter within the macro trend. "135 signals... just go to the biggest percent gains." The scanner finds the universe; your signal analysis finds the entry.</div>
+  </div>
+
+  <h3 class="sub-title">Universe 5 &mdash; Dow 30 (Natural Buying &amp; Selling)</h3>
+  <div class="callout info">
+    <strong>Why the Dow 30?</strong> Only 30 stocks. Covers most major sectors. All highly liquid, blue-chip names that trend cleanly. You confirm and negate across stocks within the same index rather than across time frames.
+  </div>
+  <div class="concept">
+    <div class="concept-term">Natural Selling</div>
+    <div class="concept-def">When the Dow Jones is green / trending up, any Dow component that is taking out prior lows with full-time frame continuity DOWN is showing <strong>natural selling</strong>. Institutions are exiting that position regardless of the market rally. These are your cleanest shorts &mdash; you're going with the seller who is more aggressive than the broad market buyer. Look for FTFC down on the stock while Dow is FTFC up.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Relative Weakness Short</div>
+    <div class="concept-def">When the Dow is consolidating (inside day) and a Dow component goes 2-down or outside day down, it's showing <strong>relative weakness</strong>. Buyers in the market overall are absent; the stock is moving against the index. These shorts are directionally aligned with the sector seller, not against the broad market.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Natural Buying</div>
+    <div class="concept-def">Same concept in reverse. When Dow is red / trending down, any Dow component showing FTFC up = natural buying. An institutional buyer is accumulating despite market weakness. When the market eventually turns, this name will fly hardest. This is how you identify what to buy on the reversal before it happens.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Simultaneous Sector Breaks in Dow</div>
+    <div class="concept-def">Look for multiple Dow components in the same sector breaking the same direction at the same time. Example: JPM, Visa, GS all going inside-week-up simultaneously = financials simultaneous break within the Dow. This is your highest-evidence signal for the next week's direction in that sector &mdash; and by extension the Dow itself.</div>
+  </div>
+
+  <h3 class="sub-title">Universe 6 &mdash; Strat Attack Show</h3>
+  <div class="callout">
+    Rob Smith's concept: scan for names with bright green (or red) monthly signals in force, then look for <strong>two consecutive days in the same direction</strong> to confirm the monthly is being acted upon right now.
+  </div>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Criteria:</strong> Name is on the monthly buy list (above monthly open). It bought Monday AND bought Tuesday (two consecutive 2-up days). This goes on the Strat Attack list.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Entry:</strong> On the third day (Wednesday) or during the two-day consolidation, look for any 60-min or 30-min actionable signal in the direction of the monthly to enter. The monthly buyer confirmed twice &mdash; they're not done.</li>
+    <li><span class="icon info">i</span> <strong>Target:</strong> Draw the broadening formation from the two-day range and gauge the magnitude. If the trade works and hits magnitude, the name may then appear on the gap list &mdash; trade it there. "Now you can trade it in the gapper universe."</li>
+    <li><span class="icon warn">!</span> <strong>Turnaround Tuesday:</strong> A specific subset &mdash; when a name reverses with a 2-2 on a Tuesday. "Turnaround Tuesday" setups that happen to also have monthly continuity are high-probability swing entries for the rest of the week.</li>
+  </ul>
+</section>
+<section class="section" id="advanced">
+  <div class="section-header">
+    <span class="section-num">11</span>
+    <h2 class="section-title">Advanced Concepts &amp; High Conviction Signals</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <h3 class="sub-title">The Fractal Nature of The Strat</h3>
+  <div class="callout">
+    <strong>Every time frame is the same pattern at a different scale.</strong> A 15-second broadening formation behaves identically to a yearly broadening formation &mdash; same mechanics, same rules, different magnitude. When you see a 1-minute range expand, realize you're watching the exact same process as a yearly 3-2. "That three is the same thing we just saw in the one minute, but it's a yearly broadening formation." This is why the Strat works at every time frame simultaneously.
+  </div>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label green">Nested Broadening Formations</div>
+      <h3>Formations Inside Formations</h3>
+      <p>When price is stuck in a mother bar for hours, it's building a smaller broadening formation inside the larger one. As the inner formation resolves, it triggers the outer one. Watch for: tiny range &mdash; tight formation &mdash; expands &mdash; hits the outer formation boundary &mdash; explodes. The resolution always moves toward the next outside bar on the higher time frame.</p>
+    </div>
+    <div class="card">
+      <div class="card-label orange">HTF Scenario 3 Impact</div>
+      <h3>Lower Timeframe Churn</h3>
+      <p>When a higher timeframe (like the Weekly or Monthly chart) is currently printing a Scenario 3 or trading near a broadening formation boundary, the lower timeframes (such as the 15-minute or 5-minute charts) will exhibit highly volatile, choppy, and seemingly erratic "fake-outs."</p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Pre-Market Triangles</div>
+      <h3>Using Futures / Pre-Market</h3>
+      <p>Every morning, futures form broadening formations in pre-market. Mark the pre-market high and pre-market low before the open &mdash; these become your first resistance and support levels. "New low, new high, then new low, and then boom, back to new highs" is the typical pre-market sequence. The reclaim of these pre-market levels into market open is your first intraday signal of the day.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Target Cluster</div>
+      <h3>Multiple Nearby Pivots</h3>
+      <p>When a name has 2-3 nearby pivots clustered close together above (or below) current price, a signal break triggers a "pivot machine gun" &mdash; taking them all out rapidly. The more clustered the pivots, the more aggressive the short-covering/stop-out cascade. Look for this before entry &mdash; it defines your immediate momentum target.</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Measured Move</div>
+      <h3>Body-to-Body Projection</h3>
+      <p>After a range forms (broadening formation or equilibrium), measure the body of that range (open to close, not wick to wick) and project it in the direction of the break. This is the measured move target. The measured move tells you where the initial thrust should end &mdash; after which you reassess.</p>
+    </div>
+    <div class="card">
+      <div class="card-label orange">Liquidity Mechanics</div>
+      <h3>Why Signals Work</h3>
+      <p>Markets move on liquidity, not patterns. When you see a broadening formation, you're seeing stop orders stacked at obvious levels. The formation expands to grab those stops (generate liquidity), then reverses. "Which patterns trigger what liquidity" is the right question &mdash; not "what does this pattern predict." Every triangle-they-out is a deliberate stop sweep to collect liquidity before the real move.</p>
+    </div>
+    <div class="card">
+      <div class="card-label red">Instantaneous Move Rule</div>
+      <h3>If It Doesn't Go Instantly...</h3>
+      <p>A high-conviction signal should break and go immediately. If it breaks but comes back in (broadening formation against you), the seller/buyer at that level has more size than your signal indicated. "If it doesn't go instantly, you are at risk of broadening back against you." This is your early warning. Small stop, re-evaluate. The best trades go instantly because you're entering when a large opposing group is trapped.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Building High-Conviction Setups</h3>
+  <div class="concept">
+    <div class="concept-term">Volume Confirmation</div>
+    <div class="concept-def">Volume is described as a potential <strong>"fourth truth"</strong> of The Strat. When a major move occurs on the largest volume days of the year (back-to-back), institutional buyers are unmistakably present. High volume on a signal day dramatically increases the probability of follow-through. Check daily volume vs the 20-day average before sizing up.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Simultaneous Break Timing</div>
+    <div class="concept-def">Simultaneous breaks <strong>early in the week or early in the month</strong> are more powerful than those late in the period. "Simultaneous breaks near the beginning of the month almost always put the month in motion in the direction it's going." An early-week simultaneous break sets the tone for the rest of the week. Mid-week reversal setups (Wednesday) are also highly reliable because they've had time to confirm and have days remaining to follow through.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The Grinder Accumulation Pattern</div>
+    <div class="concept-def">When a stock grinds sideways all day on low volatility (slight higher lows, slight lower highs, tiny range) while inside bars form on the 15/30 &mdash; institutions are <strong>walking their bids up</strong>, slowly filling a large order without moving price. Signs: the inside bars never get a reversal signal, the stock simply refuses to go down, and the day closes near the middle. Next morning: <strong>gap up</strong> as the institution now takes the offer aggressively to finish filling. "Overnight you have the broad formation playing out because of those shorter-term time frames."</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Quarterly / Yearly "Hammer" Early Warning</div>
+    <div class="concept-def">A hammer forming on the <strong>quarterly or yearly time frame</strong> is an extremely early signal of a major reversal. The pattern: quarterly goes down (two down), then within that quarter you see the daily/weekly reverse aggressively (hammer week or outside week). Even if the quarter isn't over, the lower wick forming on the quarterly chart indicates accumulation. Pair this with a simultaneous sector break on the weekly, and you have months to ride the trade. "If that week works you can hold it for three months."</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">The Kicking Pattern</div>
+    <div class="concept-def">A gapper-specific setup: a name gaps down and immediately goes <strong>bright red</strong> with no corrective bounce whatsoever. The first 30-min bar is a long red bar with no wick at the top. This is the "kicking pattern" &mdash; full-time frame continuity kicked into force immediately at the open. It's the most aggressive version of a gap-down sell. Sellers aren't waiting for a bounce to short &mdash; they're selling the open instantly. FTFC must confirm: week, month, quarter all red for maximum conviction.</div>
+  </div>
+  <h3 class="sub-title">Exhaustion &mdash; Types, Reading &amp; Execution</h3>
+
+  <div class="callout warn">
+    <strong>Exhaustion is not one thing.</strong> Three distinct types &mdash; target exhaustion, seller/buyer exhaustion, and time exhaustion. Each is read differently and demands a different response. Treating all three the same is one of the most common execution errors.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label orange">Type 1</div>
+      <h3>Target Exhaustion</h3>
+      <p>Price reaches the structural boundary of a broadening formation &mdash; immediate magnitude or the full macro target. The candle has fulfilled its obligation. Short-sellers are stopped out, early buyers take profits. This is predictable and mappable <em>before</em> entry &mdash; you know exactly where it occurs. Distinction matters: <strong>short-term target exhaustion</strong> (e.g., hitting the 2-up day target) is a pause within a larger trend, not a trend change. <strong>Structural target exhaustion</strong> (hitting the monthly or quarterly broadening formation outer boundary) carries real reversal risk. Never treat a 2-up day exhaustion the same as a monthly boundary exhaustion.</p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Type 2</div>
+      <h3>Seller / Buyer Exhaustion</h3>
+      <p>A market-wide signal read through <em>simultaneous sector scanning</em>, not individual stock analysis. When a broad market selloff produces lower wicks forming across healthcare, financials, discretionary, staples, biotech, telecom, and real estate <em>simultaneously</em> &mdash; sellers are running out of willing participants. "Unlike before when everything was being sold &mdash; we now have everything showing signs of seller exhaustion with these lower wicks." The signal: come the next 60-min flip, if every sector ETF goes green, the seller is gone. This is a broad market reversal read, not an exit signal.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Type 3</div>
+      <h3>Time Exhaustion</h3>
+      <p>End-of-session mechanics that force price movement independent of signal. "Time exhaustion is a very real thing. Once you get towards the close &mdash; if it's a red bar, short covering will happen. If it's a long green bar, that's when you'll see profit taking." A seller who couldn't follow through and push to new lows in the final 10 minutes is a weak seller &mdash; the short covering into the close becomes the setup for the next session's open. Time exhaustion is why late-day reversals often carry into the next morning.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Execution at Target Exhaustion &mdash; Exact Steps</h3>
+  <ul class="rules-list">
+    <li><span class="icon info">i</span> <strong>Step 1 &mdash; Map it before entry.</strong> Before entering any trade, identify exactly where target exhaustion occurs. Draw the broadening formation. Know the immediate magnitude level (1 cent past the triggering bar's opposite side) and the macro target (outer formation boundary). You must know these numbers before price gets there &mdash; not while it's happening.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Step 2 &mdash; Take initial profits at immediate magnitude.</strong> The candle has fulfilled its structural obligation. "Once it hits the target, initial profit taking can be expected." Lock in partials here. Do not wait for the macro target on short-dated options &mdash; the premium decay accelerates while price consolidates at this level. Reduce size, hold a runner.</li>
+    <li><span class="icon info">i</span> <strong>Step 3 &mdash; Watch the next bar, not the price.</strong> At exhaustion risk, the question is not whether price is high &mdash; it's what the next bar does. If price goes inside (bar 1) at the exhaustion level: not reversing yet, the buyer hasn't been dislodged. Hold the runner. If it forms a shooter: profit taking confirmed, reduce further. If it reverses hard (2-down bar): exit the runner, the seller has arrived.</li>
+    <li><span class="icon warn">!</span> <strong>Step 4 &mdash; Check if the 30 and 60 have changed.</strong> "Since the 30 and 60 open hasn't changed, FTFC up is still true &mdash; but it's got to stay green." At exhaustion, FTFC is your backstop. If the 30-min and 60-min remain green and no reversal signal has formed, the runner stays on. The moment either the 30 or 60 changes direction, that's your exit on the runner.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Step 5 &mdash; Re-entering at exhaustion (advanced, high risk).</strong> If price consolidates at exhaustion and a new signal forms &mdash; 3-2, 2-1-2, or 2-2 up &mdash; you can re-enter for a momentum continuation. Rules: start very small, stop is tight (low of the new signal bar), and you need FTFC still intact. "You're buying into the top of a broadening formation &mdash; if it doesn't work, it might take you completely out." Only attempt with a defined signal, not on feel.</li>
+  </ul>
+
+  <h3 class="sub-title">Reading Seller / Buyer Exhaustion Across the Market</h3>
+  <div class="concept">
+    <div class="concept-term">The Sector Scan Method</div>
+    <div class="concept-def">During a broad market selloff or rally, scan all major sector ETFs on the 60-min chart simultaneously near the end of the session. What you're looking for: <strong>lower wicks forming across multiple unrelated sectors at the same time.</strong> Lower wicks on a red bar = sellers tried to push lower, buyers stepped in and defended. When you see this across healthcare (XLV), financials (XLF), discretionary (XLY), staples (XLP), biotech (XBI), telecom, and real estate (XLRE) all at once &mdash; that is coordinated seller exhaustion. The sellers have lost participation across the board. The signal that confirms exhaustion is complete: the <strong>next 60-min flip</strong> &mdash; if all those sectors open the new bar green, the seller is gone and the buyer has taken over.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Lower Wicks Are the Tell</div>
+    <div class="concept-def">The lower wick on a red bar is the physical evidence of buyer defense &mdash; price went down, buyers took the offer, price closed above the low. A single name with a lower wick = one buyer. Multiple sector ETFs all forming lower wicks simultaneously = institutional buyers defending across the entire market simultaneously. "Come the next 60 flip, if every 60 goes green, it shows you that seller's gone &mdash; and therefore things that are strong should start taking off as buyers follow through and start taking the offer." Scan for this specifically in the final 30-60 minutes of a down session.</div>
+  </div>
+  <div class="concept">
+    <div class="concept-term">Exhaustion is NOT a Reversal Signal</div>
+    <div class="concept-def">Seller exhaustion is a <strong>condition</strong>, not a trigger. It tells you the selling pressure is depleting &mdash; it does not tell you the buyer has arrived. You still need a signal: the next 60-min bar opening green across the sectors, or a 2-2 reversal on the index. "We have no reversals up &mdash; so although there was some seller exhaustion and it did firm up the indexes, we have no aggressive buyers yet." Exhaustion removes the seller; a signal confirms the buyer. You need both before entering a reversal trade sized for a full move.</div>
+  </div>
+  <h3 class="sub-title">Reading Gaps for Early-Week Direction</h3>
+  <ul class="rules-list">
+    <li><span class="icon info">i</span> <strong>What did Monday open as?</strong> Monday's open is the weekly open. If it opens green above the prior weekly close, the weekly buyer is attempting to show up. If red, sellers. But Monday alone = coupled with the weekly group &mdash; you don't yet have separate daily evidence.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>Tuesday decouples.</strong> Tuesday's daily open is now separate from the weekly. A bright green Tuesday with a long green bar = the daily group confirmed the weekly group. "They bought Monday, bought Tuesday &mdash; how are you going to turn that around?" At this point, you have strong swing trade evidence.</li>
+    <li><span class="icon warn">!</span> <strong>Failed two on the week.</strong> When the week opens above the prior week's close but fails to make new highs by end of week &mdash; that's a "failed two." This sets up a 22 reversal the following week (the week opens and immediately goes the other direction). Extremely reliable weekly reversal setup.</li>
+    <li><span class="icon info">i</span> <strong>The 4-hour chart as bridge.</strong> The 4-hour bar helps swing traders between the 60-min and daily. "You get a lot of 3-1s on the 4-hour and also a lot of 1-3 rev strats." The 4-hour gives more signal opportunities without the noise of the 15/30-min while still being faster than waiting for daily bars. Good for overnight hold management.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Inside week = no trade.</strong> On Mondays when the daily and weekly open are coupled AND the name is inside week &mdash; you have maximum uncertainty. "Inside week on Monday, the day and the week opens are the same so you don't even know what the daily group's doing." Wait for Tuesday's decoupling before committing to a weekly swing.</li>
+  </ul>
+
+  <div class="callout info"><strong>RTH distortion note on 4-Hour Bars:</strong> A standard US equity RTH session is 6.5 hours (9:30&ndash;4:00 PM). A standard 4-hour chart creates one full 4-hour candle (9:30&ndash;1:30) and a truncated 2.5-hour candle (1:30&ndash;4:00) &mdash; an asymmetric fractional bar that warps Strat patterns. Solution: use a <strong>130-minute chart</strong> (yields 3 equal candles: 9:30&ndash;11:40, 11:40&ndash;1:50, 1:50&ndash;4:00) or a <strong>195-minute chart</strong> (yields 2 equal candles) for clean, equally-divided RTH data without distortion.</div>
+
+  <h3 class="sub-title">Scanning Workflow for High-Conviction Ideas</h3>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label green">Step 1: Top-Down Filter</div>
+      <h3>Start with Indexes &amp; Sectors</h3>
+      <p>Is SPY/QQQ FTFC up or down? Which sectors are leading (most 2-ups) vs lagging (most inside bars or 2-downs)? The leading sector is your universe for the day/week. Everything you trade should have a tailwind from the sector and index, not fight it.</p>
+    </div>
+    <div class="card">
+      <div class="card-label blue">Step 2: Scanner Filter</div>
+      <h3>Inside Bars Above Monthly Open</h3>
+      <p>Pull all names showing inside 60 that are above their monthly open by 10-15%+. These are the leaders in monthly uptrends consolidating for a break. "81 names inside 60 above their monthly opens &mdash; all the leaders this month." Sort by momentum (highest % above monthly open) to find the strongest names.</p>
+    </div>
+    <div class="card">
+      <div class="card-label purple">Step 3: Sector Correlation Check</div>
+      <h3>Confirm with ETF + 2 Names</h3>
+      <p>Once you have a target name, confirm the sector ETF is also setting up the same signal. Then find 1-2 other names in that sector doing the same thing. Three correlated assets breaking simultaneously = institutional involvement. One name alone = lower conviction. "When you have that simultaneous break, it shows you there's some type of institutional buyer."</p>
+    </div>
+    <div class="card">
+      <div class="card-label gold">Step 4: Time the Entry</div>
+      <h3>Triangle They Out First</h3>
+      <p>Don't buy the initial break of the inside bar directly. Wait for the post-break triangle (slight lower low after the break), then buy the reclaim. This eliminates false breakout risk and puts you in after the short-stop sweep. "We want to go down, take everyone out so it doesn't look good, and then go after it." The triangle-they-out into the reclaim is the cleanest entry point.</p>
+    </div>
+  </div>
+
+  <h3 class="sub-title">Position Sizing &amp; Trade Management Philosophy</h3>
+  <ul class="rules-list">
+    <li><span class="icon bull">&#10003;</span> <strong>Start small, add in force.</strong> Enter with a partial position at the signal. Add when the next time frame confirms (e.g., enter on 15-min signal, add when 30-min confirms, add again when 60-min confirms). "Start small and then add when it goes in force." Never enter full size at the first signal.</li>
+    <li><span class="icon bull">&#10003;</span> <strong>35-45% of capital into the highest-conviction setup.</strong> When you have FTFC + simultaneous break + volume + sector confirmation &mdash; that's the setup to size up on. Normal trades: 2-5% of capital. High conviction with hard stop defined: up to 35-45% is valid (per veteran trader Powers). "As long as I know where my stop is and it's already in the system."</li>
+    <li><span class="icon info">i</span> <strong>Stop in the system before entry.</strong> Define the stop before you pull the trigger. Enter it as a stop-market order immediately upon entering the trade. Never keep the stop only in your head. "It's in the system. I know my risk. It is very defined."</li>
+    <li><span class="icon warn">!</span> <strong>The afternoon advantage.</strong> If the morning is uncertain or choppy, wait. By 12:30-1:30, you know which stocks performed best that day. "By 12:30, 1:30, you're going to find a setup in the best stock that has performed that day." The best intraday setups often come in the afternoon on the stocks that were strongest in the morning. Less noise, clearer trend, same signals.</li>
+    <li><span class="icon bear">&#10007;</span> <strong>Don't trade inside bars.</strong> "If I'm sitting in something that's clearly a one and it has a big three next to it on its left, I don't want to be there." Inside bars next to large outside bars are trapped in the broadening formation's influence. Wait for the resolution. Trading inside a one is trading uncertainty.</li>
+    <li><span class="icon info">i</span> <strong>One-trick pony wins.</strong> Learn one specific setup deeply &mdash; master the gapper universe, or the 22 reversal on the 60-min, or the inside-week break. "It's better to be a one-trick pony. Learn one specific technique." Once you know the trick deeply enough to know when it's NOT working (your signal to stop), you've built real edge.</li>
+  </ul>
+</section>
+</div>
+
+<footer>
+  <p>STRAT TRADING STUDY GUIDE &mdash; built from concepts developed by Rob Smith, sarahstratsniper and Alexoptions</p>
+</footer>
+
+</body>
+</html>
